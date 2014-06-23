@@ -2,9 +2,9 @@
 ACF_defineGunClass("SL", {
 	spread = 0.32,
 	name = "Smoke Launcher",
-	desc = "Smoke launcher to block an attacker's line of sight.",
+	desc = "Smoke launchers are used for concealing areas from the enemy's view.",
 	muzzleflash = "40mm_muzzleflash_noscale",
-	rofmod = 45,
+	rofmod = 15,
 	sound = "weapons/ACF_Gun/mortar_new.wav",
 	soundDistance = "Mortar.Fire",
 	soundNormal = " "
