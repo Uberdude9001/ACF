@@ -14,7 +14,7 @@ ACF.KinFudgeFactor = 2.1	--True kinetic would be 2, over that it's speed biaised
 ACF.KEtoRHA = 0.25		--Empirical conversion from (kinetic energy in KJ)/(Aera in Cm2) to RHA penetration
 ACF.GroundtoRHA = 0.05		--How much mm of steel is a mm of ground worth (Real soil is about 0.15
 ACF.KEtoSpall = 1
-ACF.AmmoMod = 0.6		-- Ammo modifier. 1 is 1x the amount of ammo
+ACF.AmmoMod = 1		-- Ammo modifier. 1 is 1x the amount of ammo
 ACF.ArmorMod = 1
 ACF.Spalling = 0
 ACF.GunfireEnabled = true
@@ -131,7 +131,7 @@ elseif CLIENT then
 	killicon.Add( "acf_SA", "HUD/killicons/acf_SA", Color( 200, 200, 48, 255 ) )
 	killicon.Add( "acf_ammo", "HUD/killicons/acf_ammo", Color( 200, 200, 48, 255 ) )
 	
-	CreateConVar("acf_cl_particlemul", 1)
+	CreateConVar("acf_cl_particlemul", 0.2)
 end
 
 include("acf/shared/rounds/roundap.lua")
