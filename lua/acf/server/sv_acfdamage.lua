@@ -201,7 +201,7 @@ function ACF_RoundImpact( Bullet, Speed, Energy, Target, HitPos, HitNormal , Bon
 	end
 	local HitRes = ACF_Damage ( Target , Energy , Bullet["PenAera"] , Angle , Bullet["Owner"] , Bone, Bullet["Gun"], Bullet["Type"] )  --DAMAGE !!
 	
-	ACF_KEShove(Target, HitPos, Bullet["Flight"]:GetNormal(), Energy.Kinetic*HitRes.Loss*1000*Bullet["ShovePower"] )
+	--ACF_KEShove(Target, HitPos, Bullet["Flight"]:GetNormal(), Energy.Kinetic*HitRes.Loss*1000*Bullet["ShovePower"] ) -- Hilariously broken 
 	
 	if HitRes.Kill then
 		local Debris = ACF_APKill( Target , (Bullet["Flight"]):GetNormalized() , Energy.Kinetic )
@@ -255,35 +255,36 @@ function ACF_PenetrateGround( Bullet, Energy, HitPos )
 	
 end
 
-function ACF_KEShove(Target, Pos, Vec, KE )
+-- This is hilariously broken
+--function ACF_KEShove(Target, Pos, Vec, KE )
 	
-	local phys = Target:GetPhysicsObject()
-	local parent = Target:GetParent()
-	local depth = 0
+--	local phys = Target:GetPhysicsObject()
+--	local parent = Target:GetParent()
+--	local depth = 0
 	
-	if parent:IsValid() then
-		while parent:GetParent():IsValid() and depth<5 do
-			depth = depth + 1
-			parent = parent:GetParent()
-		end
-		phys = parent:GetPhysicsObject()
-	end
+--	if parent:IsValid() then
+--		while parent:GetParent():IsValid() and depth<5 do
+--			depth = depth + 1
+--			parent = parent:GetParent()
+--		end
+--		phys = parent:GetPhysicsObject()
+--	end
 	
-	if (phys:IsValid()) then	
-		phys:ApplyForceOffset( Vec:GetNormal() * KE, Pos )
-	end
+--	if (phys:IsValid()) then	
+--		phys:ApplyForceOffset( Vec:GetNormal() * KE, Pos )
+--	end
 	
-end
+--end
 
 
-ACF.IgniteDebris = 
-{
-	acf_ammo = true,
-	acf_gun = true,
-	acf_gearbox = true,
-	acf_fueltank = true,
-	acf_engine = true
-}
+--ACF.IgniteDebris = 
+--{
+--	acf_ammo = true,
+--	acf_gun = true,
+--	acf_gearbox = true,
+--	acf_fueltank = true,
+--	acf_engine = true
+--}
 
 
 function ACF_HEKill( Entity , HitVector , Energy )
@@ -314,9 +315,10 @@ function ACF_HEKill( Entity , HitVector , Energy )
 		Debris:SetMaterial("models/props_wasteland/metal_tram001a")
 		Debris:Spawn()
 		
-		if ACF.IgniteDebris[entClass] then
-			Debris:Ignite(60,0)
-		end
+		-- Laggy shit
+		--if ACF.IgniteDebris[entClass] then
+		--	Debris:Ignite(60,0)
+		--end
 		
 		Debris:Activate()
 
