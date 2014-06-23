@@ -1,6 +1,6 @@
 --define the class
 ACF_defineGunClass("AL", {
-	spread = 0.08,
+	spread = 0.05,
 	name = "Autoloader",
 	desc = "A cannon with attached autoloading mechanism.  While it allows for several quick shots, the mechanism adds considerable bulk, weight, and magazine reload time.",
 	muzzleflash = "120mm_muzzleflash_noscale",
