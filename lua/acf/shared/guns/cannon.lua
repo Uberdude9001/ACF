@@ -1,6 +1,6 @@
 --define the class
 ACF_defineGunClass("C", {
-	spread = 0.08,
+	spread = 0.05,
 	name = "Cannon",
 	desc = "High velocity guns that can fire very powerful ammunition, but are rather slow to reload.",
 	muzzleflash = "120mm_muzzleflash_noscale",
