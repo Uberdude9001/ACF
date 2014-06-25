@@ -184,26 +184,28 @@ end
 
 function ENT:ACF_OnDamage( Entity, Energy, FrAera, Angle, Inflictor, Bone, Type )	--This function needs to return HitRes
 
-	local Mul = ((Type == "HEAT" and 6.6) or 1) --Heat penetrators deal bonus damage to fuel, roughly half an AP round
-	local HitRes = ACF_PropDamage( Entity, Energy, FrAera * Mul, Angle, Inflictor )	--Calling the standard damage prop function
+	local HitRes = ACF_PropDamage( Entity, Energy, FrAera, Angle, Inflictor )	--Calling the standard damage prop function
 	
-	local NoExplode = self.FuelType == "Diesel" and not (Type == "HE" or Type == "HEAT")
-	if self.Exploding or NoExplode or not self.IsExplosive then return HitRes end
+	local NoExplode = self.FuelType == "Diesel" and Type ~= "HEAT"
+	if self.Exploding or NoExplode not self.IsExplosive then return HitRes end
 	
 	if HitRes.Kill then
 		if hook.Run( "ACF_FuelExplode", self ) == false then return HitRes end
 		self.Exploding = true
-		if( Inflictor and Inflictor:IsValid() and Inflictor:IsPlayer() ) then
+		
+		if Inflictor and Inflictor:IsValid() and Inflictor:IsPlayer() then
 			self.Inflictor = Inflictor
 		end
+		
 		ACF_ScaledExplosion( self )
+		
 		return HitRes
 	end
 	
 	local Ratio = (HitRes.Damage/self.ACF.Health)^0.75 --chance to explode from sheer damage, small shots = small chance
 	local ExplodeChance = (1-(self.Fuel/self.Capacity))^0.75 --chance to explode from fumes in tank, less fuel = more explodey
 	 
-	if math.Rand(0,1) < (ExplodeChance + Ratio) then  --it's gonna blow
+	if math.Rand(0,1) < ExplodeChance + Ratio or Type == "HEAT" then  --it's gonna blow
 		if hook.Run( "ACF_FuelExplode", self ) == false then return HitRes end
 		self.Inflictor = Inflictor
 		self.Exploding = true
@@ -344,14 +346,14 @@ end
 
 function ENT:TriggerInput( iname, value )
 
-	if (iname == "Active") then
-		if not (value == 0) then
+	if iname == "Active" then
+		if value ~= 0 then
 			self.Active = true
 		else
 			self.Active = false
 		end
 	elseif iname == "Refuel Duty" then
-		if not (value == 0) then
+		if value ~= 0 then
 			self.SupplyFuel = true
 		else
 			self.SupplyFuel = false
@@ -368,15 +370,14 @@ function ENT:Think()
 		self:NextThink( CurTime() + 0.25 )
 		self.Fuel = math.max(self.Fuel - self.Leaking,0)
 		self.Leaking = math.Clamp(self.Leaking - (1 / math.max(self.Fuel,1))^0.5, 0, self.Fuel) --fuel tanks are self healing
-		Wire_TriggerOutput(self, "Leaking", (self.Leaking > 0) and 1 or 0)
+		Wire_TriggerOutput(self, "Leaking", self.Leaking > 0 and 1 or 0)
 	end
 	
 	--refuelling
 	if self.Active and self.SupplyFuel and self.Fuel > 0 then
 		for _,Tank in pairs(ACF.FuelTanks) do
 			if self.FuelType == Tank.FuelType and not Tank.SupplyFuel then --don't refuel the refuellers, otherwise it'll be one big circlejerk
-				local dist = self:GetPos():Distance(Tank:GetPos())
-				if dist < ACF.RefillDistance then
+				if self:GetPos():Distance(Tank:GetPos()) < ACF.RefillDistance then
 					if Tank.Capacity - Tank.Fuel > 0.1 then
 						local exchange = (CurTime() - self.LastThink) * ACF.RefillSpeed * (((self.FuelType == "Electric") and ACF.ElecRate) or ACF.FuelRate) / 3500
 						exchange = math.min(exchange, self.Fuel, Tank.Capacity - Tank.Fuel)
