@@ -186,10 +186,9 @@ function ENT:ACF_OnDamage( Entity, Energy, FrAera, Angle, Inflictor, Bone, Type 
 
 	local HitRes = ACF_PropDamage( Entity, Energy, FrAera, Angle, Inflictor )	--Calling the standard damage prop function
 	
-	local NoExplode = self.FuelType == "Diesel" and Type ~= "HEAT"
-	if self.Exploding or NoExplode or not self.IsExplosive then return HitRes end
+	if self.Exploding or not self.IsExplosive then return HitRes end -- Ending here will break leaking, you idiots
 	
-	if HitRes.Kill then
+	if HitRes.Kill or Type == "HEAT" then -- No HP or we're hit with HEAT , detonate
 		if hook.Run( "ACF_FuelExplode", self ) == false then return HitRes end
 		self.Exploding = true
 		
@@ -202,19 +201,33 @@ function ENT:ACF_OnDamage( Entity, Energy, FrAera, Angle, Inflictor, Bone, Type 
 		return HitRes
 	end
 	
-	local Ratio = (HitRes.Damage/self.ACF.Health)^0.75 --chance to explode from sheer damage, small shots = small chance
-	local ExplodeChance = (1-(self.Fuel/self.Capacity))^0.75 --chance to explode from fumes in tank, less fuel = more explodey
-	 
-	if math.Rand(0,1) < ExplodeChance + Ratio or Type == "HEAT" then  --it's gonna blow
-		if hook.Run( "ACF_FuelExplode", self ) == false then return HitRes end
-		self.Inflictor = Inflictor
-		self.Exploding = true
-		ACF_ScaledExplosion( self )
-	else 												--spray some fuel around
-		self:NextThink( CurTime() + 0.1 )
-		self.Leaking = self.Leaking + self.Fuel * ((HitRes.Damage/self.ACF.Health)^1.5) * 0.25
+	if self.FuelType == "Diesel" then -- Diesel only goes bang with HE or HEAT, which is addressed above
+		if Type == "HE" and math.Rand(0,1) < (HitRes.Damage/self.ACF.Health)^0.75 then -- if its HE, it might blow
+			if hook.Run( "ACF_FuelExplode", self ) == false then return HitRes end
+				
+			self.Inflictor = Inflictor
+			self.Exploding = true
+			ACF_ScaledExplosion( self )
+		else -- Leaking
+			self:NextThink( CurTime() + 0.1 )
+			self.Leaking = self.Leaking + self.Fuel * ((HitRes.Damage/self.ACF.Health)^1.5) * 0.25
+		end
+	else -- Not diesel, treat normally
+		local Ratio = (HitRes.Damage/self.ACF.Health)^0.75 --chance to explode from sheer damage, small shots = small chance
+		local ExplodeChance = (1-(self.Fuel/self.Capacity))^0.75 --chance to explode from fumes in tank, less fuel = more explodey
+			 
+		if math.Rand(0,1) < ExplodeChance + Ratio then  --it's gonna blow
+			if hook.Run( "ACF_FuelExplode", self ) == false then return HitRes end
+				
+			self.Inflictor = Inflictor
+			self.Exploding = true
+			ACF_ScaledExplosion( self )
+		else -- Leaking
+			self:NextThink( CurTime() + 0.1 )
+			self.Leaking = self.Leaking + self.Fuel * ((HitRes.Damage/self.ACF.Health)^1.5) * 0.25
+		end
 	end
-	
+		
 	return HitRes
 	
 end
