@@ -187,7 +187,7 @@ function ENT:ACF_OnDamage( Entity, Energy, FrAera, Angle, Inflictor, Bone, Type 
 	local HitRes = ACF_PropDamage( Entity, Energy, FrAera, Angle, Inflictor )	--Calling the standard damage prop function
 	
 	local NoExplode = self.FuelType == "Diesel" and Type ~= "HEAT"
-	if self.Exploding or NoExplode not self.IsExplosive then return HitRes end
+	if self.Exploding or NoExplode or not self.IsExplosive then return HitRes end
 	
 	if HitRes.Kill then
 		if hook.Run( "ACF_FuelExplode", self ) == false then return HitRes end
