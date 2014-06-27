@@ -141,8 +141,6 @@ function Round.worldimpact( Index, Bullet, HitPos, HitNormal )
 	local Retry = ACF_PenetrateGround( Bullet, Energy, HitPos )
 	if Retry then
 		return "Penetrated"
-	elseif math.random(0,5) <= 1 then -- One in five chance of ricochet off ground
-		return "Ricochet"
 	else
 		return false
 	end
