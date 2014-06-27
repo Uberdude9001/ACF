@@ -137,10 +137,7 @@ function ACF_DoBulletsFlight( Index, Bullet )
 		if Retry == "Penetrated" then 								--if it is, we soldier on	
 			ACF_BulletClient( Index, Bullet, "Update" , 2 , FlightRes.HitPos  )
 			ACF_CalcBulletFlight( Index, Bullet, true )				--The world ain't going to move, so we say True for the backtrace override
-		elseif Retry == "Ricochet" then -- AP rounds have a chance of ricochet
-			ACF_BulletClient( Index, Bullet, "Update" , 3 , FlightRes.HitPos  )
-			ACF_CalcBulletFlight( Index, Bullet, true )
-		else														--If not, end of the line, boyo
+		else--If not, end of the line, boyo
 			ACF_BulletClient( Index, Bullet, "Update" , 1 , FlightRes.HitPos  )
 			ACF_BulletEndFlight = ACF.RoundTypes[Bullet.Type]["endflight"]
 			ACF_BulletEndFlight( Index, Bullet, FlightRes.HitPos, FlightRes.HitNormal )	
