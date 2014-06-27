@@ -33,9 +33,9 @@ function ACF_HE( Hitpos , HitNormal , FillerMass, FragMass , Inflictor, NoOcc, A
 		local TotalAera = 0
 		for i,Tar in pairs(Targets) do
 			Iterations = i
-			if ( Tar != nil and Power > 0 and not Tar.Exploding ) then
+			if Tar != nil and Power > 0 and not Tar.Exploding then
 				local Type = ACF_Check(Tar)
-				if ( Type ) then
+				if Type then
 					local Hitat = nil
 					if Type == "Squishy" then 										--A little hack so it doesn't check occlusion at the feet of players
 						local Eyes = Tar:LookupAttachment("eyes")
@@ -59,7 +59,7 @@ function ACF_HE( Hitpos , HitNormal , FillerMass, FragMass , Inflictor, NoOcc, A
 						Occlusion.mask = MASK_SOLID
 					local Occ = util.TraceLine( Occlusion )	
 					
-					if ( !Occ.Hit and Hitpos != Hitat ) then
+					if not Occ.Hit and Hitpos != Hitat then
 						local Hitat = Tar:GetPos()
 						local Occlusion = {}
 							Occlusion.start = Hitpos
@@ -69,10 +69,10 @@ function ACF_HE( Hitpos , HitNormal , FillerMass, FragMass , Inflictor, NoOcc, A
 						Occ = util.TraceLine( Occlusion )	
 					end
 					
-					if ( Occ.Hit and Occ.Entity:EntIndex() != Tar:EntIndex() ) then
+					if Occ.Hit and Occ.Entity:EntIndex() != Tar:EntIndex() then
 					
 						--print("Hit "..Occ.Entity:GetModel())
-					elseif ( !Occ.Hit and Hitpos != Hitat ) then
+					elseif not Occ.Hit and Hitpos != Hitat then
 						--print("No Hit "..Occ.Entity:GetModel())
 						--print((Hitpos - Hitat):Length())
 					else
@@ -123,8 +123,8 @@ function ACF_HE( Hitpos , HitNormal , FillerMass, FragMass , Inflictor, NoOcc, A
 				LoopKill = true
 			else
 				local phys = Tar:GetPhysicsObject() 
-				if (phys:IsValid()) then 
-					if(!Tar.acflastupdatemass) or (Tar.acflastupdatemass < (CurTime() + 10)) then
+				if IsValid(phys) then 
+					if not Tar.acflastupdatemass or Tar.acflastupdatemass < CurTime() + 10 then
 						ACF_CalcMassRatio(Tar)
 					end
 					local scalepush = GetConVarNumber("acf_hepush") or 1
@@ -140,6 +140,7 @@ function ACF_HE( Hitpos , HitNormal , FillerMass, FragMass , Inflictor, NoOcc, A
 		
 end
 
+--[[ I hope you guys know that functions have a lot of overhead, if you aren't going to use it, get rid of it
 function ACF_Spall( HitPos , HitVec , HitMask , KE , Caliber , Armour , Inflictor )
 	
 	--if(!ACF.Spalling) then
@@ -188,6 +189,8 @@ function ACF_SpallTrace( HitVec , SpallTr , SpallEnergy , SpallAera , Inflictor 
 	end
 	
 end
+
+]]--
 
 function ACF_RoundImpact( Bullet, Speed, Energy, Target, HitPos, HitNormal , Bone  )	--Simulate a round impacting on a prop
 	--if (Bullet.Type == "HEAT") then print("Pen: "..((Energy.Penetration / Bullet["PenAera"]) * ACF.KEtoRHA)) end
@@ -255,37 +258,37 @@ function ACF_PenetrateGround( Bullet, Energy, HitPos )
 	
 end
 
--- This is hilariously broken
---function ACF_KEShove(Target, Pos, Vec, KE )
+--[[ This is hilariously broken
+function ACF_KEShove(Target, Pos, Vec, KE )
 	
---	local phys = Target:GetPhysicsObject()
---	local parent = Target:GetParent()
---	local depth = 0
+	local phys = Target:GetPhysicsObject()
+	local parent = Target:GetParent()
+	local depth = 0
 	
---	if parent:IsValid() then
---		while parent:GetParent():IsValid() and depth<5 do
---			depth = depth + 1
---			parent = parent:GetParent()
---		end
---		phys = parent:GetPhysicsObject()
---	end
+	if parent:IsValid() then
+		while parent:GetParent():IsValid() and depth<5 do
+			depth = depth + 1
+			parent = parent:GetParent()
+		end
+		phys = parent:GetPhysicsObject()
+	end
 	
---	if (phys:IsValid()) then	
---		phys:ApplyForceOffset( Vec:GetNormal() * KE, Pos )
---	end
+	if (phys:IsValid()) then	
+		phys:ApplyForceOffset( Vec:GetNormal() * KE, Pos )
+	end
 	
---end
+end
 
-
---ACF.IgniteDebris = 
---{
---	acf_ammo = true,
---	acf_gun = true,
---	acf_gearbox = true,
---	acf_fueltank = true,
---	acf_engine = true
---}
-
+--This is just FPS rape and doesn't make much sense
+ACF.IgniteDebris = 
+{
+	acf_ammo = true,
+	acf_gun = true,
+	acf_gearbox = true,
+	acf_fueltank = true,
+	acf_engine = true
+}
+]]--
 
 function ACF_HEKill( Entity , HitVector , Energy )
 	--print("ACF_HEKill ent: ".. Entity:GetModel() or "unknown")
@@ -294,7 +297,7 @@ function ACF_HEKill( Entity , HitVector , Energy )
 	local obj = Entity:GetPhysicsObject()
 	local grav = true
 	local mass = nil
-	if obj:IsValid() and ISSITP then
+	if IsValid(obj) and ISSITP then
 		grav = obj:IsGravityEnabled()
 		mass = obj:GetMass()
 	end
@@ -304,7 +307,7 @@ function ACF_HEKill( Entity , HitVector , Energy )
 	
 	Entity:Remove()
 	
-	if(Entity:BoundingRadius() < ACF.DebrisScale) then
+	if Entity:BoundingRadius() < ACF.DebrisScale then
 		return nil
 	end
 	
@@ -315,18 +318,18 @@ function ACF_HEKill( Entity , HitVector , Energy )
 		Debris:SetMaterial("models/props_wasteland/metal_tram001a")
 		Debris:Spawn()
 		
-		-- Laggy shit
-		--if ACF.IgniteDebris[entClass] then
-		--	Debris:Ignite(60,0)
-		--end
-		
+		--[[ Laggy shit
+		if ACF.IgniteDebris[entClass] then
+			Debris:Ignite(60,0)
+		end
+		]]--
 		Debris:Activate()
 
 	local phys = Debris:GetPhysicsObject() 
-	if (phys:IsValid()) then
+	if IsValid(phys) then
 		phys:ApplyForceOffset( HitVector:GetNormal() * Energy * 350 , Debris:GetPos()+VectorRand()*20 ) 	
 		phys:EnableGravity( grav )
-		if(mass != nil) then
+		if mass != nil then
 			phys:SetMass(mass)
 		end
 	end
@@ -340,7 +343,7 @@ function ACF_APKill( Entity , HitVector , Power )
 	constraint.RemoveAll( Entity )
 	Entity:Remove()
 	
-	if(Entity:BoundingRadius() < ACF.DebrisScale) then
+	if Entity:BoundingRadius() < ACF.DebrisScale then
 		return nil
 	end
 
@@ -359,7 +362,7 @@ function ACF_APKill( Entity , HitVector , Power )
 	util.Effect( "WheelDust", BreakEffect )	
 		
 	local phys = Debris:GetPhysicsObject() 
-	if (phys:IsValid()) then	
+	if IsValid(phys) then	
 		phys:ApplyForceOffset( HitVector:GetNormal() * Power * 350 ,  Debris:GetPos()+VectorRand()*20 )	
 	end
 
@@ -370,7 +373,7 @@ end
 --converts what would be multiple simultaneous cache detonations into one large explosion
 function ACF_ScaledExplosion( ent )
 	local Inflictor = nil
-	if( ent.Inflictor ) then
+	if ent.Inflictor then
 		Inflictor = ent.Inflictor
 	end
 	
@@ -405,7 +408,7 @@ function ACF_ScaledExplosion( ent )
 					Occlusion.filter = Filter
 				local Occ = util.TraceLine( Occlusion )
 				
-				if ( Occ.Fraction == 0 ) then
+				if Occ.Fraction == 0 then
 					table.insert(Filter,Occ.Entity)
 					local Occlusion = {}
 						Occlusion.start = Pos
@@ -415,7 +418,7 @@ function ACF_ScaledExplosion( ent )
 					--print("Ignoring nested prop")
 				end
 					
-				if ( Occ.Hit and Occ.Entity:EntIndex() != Found.Entity:EntIndex() ) then 
+				if Occ.Hit and Occ.Entity:EntIndex() != Found.Entity:EntIndex() then 
 						--Msg("Target Occluded\n")
 				else
 					local FoundHEWeight
