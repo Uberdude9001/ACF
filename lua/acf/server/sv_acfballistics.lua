@@ -9,16 +9,17 @@ function ACF_CreateBullet( BulletData )
 		ACF.CurBulletIndex = 1
 	end
 	
-	local cvarGrav = GetConVar("sv_gravity")
-	BulletData["Accel"] = Vector(0,0,cvarGrav:GetInt()*-1)			--Those are BulletData settings that are global and shouldn't change round to round
+	BulletData["Accel"] = Vector(0,0,GetConVar("sv_gravity"):GetInt()*-1)			--Those are BulletData settings that are global and shouldn't change round to round
 	BulletData["LastThink"] = SysTime()
 	BulletData["FlightTime"] = 0
 	BulletData["TraceBackComp"] = 0
+	
 	if BulletData["FuseLength"] then
 		print("Has fuse")
 		BulletData["InitTime"] = SysTime()
 	end
-	if BulletData["Gun"]:IsValid() then											--Check the Gun's velocity and add a modifier to the flighttime so the traceback system doesn't hit the originating contraption if it's moving along the shell path
+	
+	if IsValid(BulletData["Gun"]) then											--Check the Gun's velocity and add a modifier to the flighttime so the traceback system doesn't hit the originating contraption if it's moving along the shell path
 		BulletData["TraceBackComp"] = BulletData["Gun"]:GetPhysicsObject():GetVelocity():Dot(BulletData["Flight"]:GetNormalized())
 		if BulletData["Gun"].sitp_inspace then
 			BulletData["Accel"] = Vector(0, 0, 0)
@@ -26,6 +27,7 @@ function ACF_CreateBullet( BulletData )
 		end
 		--print(BulletData["TraceBackComp"])
 	end
+	
 	BulletData["Filter"] = { BulletData["Gun"] }
 	BulletData["Index"] = ACF.CurBulletIndex
 		
@@ -73,6 +75,7 @@ end
 function ACF_DoBulletsFlight( Index, Bullet )
 	local CanDo = hook.Run("ACF_BulletsFlight", Index, Bullet )
 	if CanDo == false then return end
+	
 	if Bullet.FuseLength then
 		local Time = SysTime() - Bullet.IniTime
 		if Time > Bullet.FuseLength then
@@ -88,7 +91,7 @@ function ACF_DoBulletsFlight( Index, Bullet )
 	end
 	
 	if Bullet.SkyLvL then
-		if (CurTime() - Bullet.LifeTime) > 500 then			 -- We don't want to calculate bullets that will never come back to map.
+		if CurTime() - Bullet.LifeTime > 500 then			 -- We don't want to calculate bullets that will never come back to map.
 			ACF_RemoveBullet( Index )
 			return
 		end
