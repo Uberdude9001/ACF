@@ -41,7 +41,7 @@ ACF_defineGun("80mmM", {
 	
 ACF_defineGun("120mmM", {
 	name = "120mm Mortar",
-	desc = "\"The versatile 120 is sometimes vehicle-mounted to provide quick boomsplat to support the infantry.  Carries more boom in its boomsplat, has good HEAT performance, and is more accurate in high-angle firing.\"~Red the Autistic Mongoloid",
+	desc = "\"The versatile 120 is sometimes vehicle-mounted to provide quick boomsplat to support the infantry.  Carries more boom in its boomsplat, has good HEAT performance, and is more accurate in high-angle firing.\"\n-Red the Autistic Mongoloid\n\n\"How do I physics\"-Red the Autistic Mongoloid",
 	model = "models/mortar/mortar_120mm.mdl",
 	gunclass = "MO",
 	caliber = 12.0,
