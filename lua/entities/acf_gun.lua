@@ -260,7 +260,7 @@ function ENT:UpdateOverlayText()
 	
 	local clipLeft = isEmpty and 0 or (self.MagSize - self.CurrentShot)
 	local ammoLeft = (self.Ammo or 0) + clipLeft
-local isReloading = not isEmpty and CurTime() < self.NextFire and (self.MagSize == 1 or (self.LastLoadDuration > self.ReloadTime))
+	local isReloading = not isEmpty and CurTime() < self.NextFire and (self.MagSize == 1 or (self.LastLoadDuration > self.ReloadTime))
 	local gunStatus = isReloading and "reloading" or (clipLeft .. " in gun")
 	
 	--print(self.MagSize or "nil", isEmpty, clipLeft, self.CurrentShot)
