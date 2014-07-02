@@ -260,7 +260,7 @@ function ENT:UpdateOverlayText()
 	
 	local clipLeft = isEmpty and 0 or (self.MagSize - self.CurrentShot)
 	local ammoLeft = (self.Ammo or 0) + clipLeft
-	local isReloading = not isEmpty and CurTime() < self.NextFire and (self.MagSize == 1 or (self.LastLoadDuration > self.ReloadTime))
+local isReloading = not isEmpty and CurTime() < self.NextFire and (self.MagSize == 1 or (self.LastLoadDuration > self.ReloadTime))
 	local gunStatus = isReloading and "reloading" or (clipLeft .. " in gun")
 	
 	--print(self.MagSize or "nil", isEmpty, clipLeft, self.CurrentShot)
@@ -398,8 +398,8 @@ function ENT:TriggerInput( iname, value )
 		self:UnloadAmmo()
 	elseif iname == "Fire" and value > 0 and ACF.GunfireEnabled then
 		local tracedata = {}
-			trace.start = this:GetPos()
-			trace.endpos = this:GetAttachment( 1 ).Pos
+			trace.start = self:GetPos()
+			trace.endpos = self:GetAttachment( 1 ).Pos
 			trace.mask = MASK_NPCWORLDSTATIC
 		if self.NextFire < CurTime() and not util.TraceLine(tracedata).hit then
 			self.User = self:GetUser(self.Inputs.Fire.Src) or self.Owner
@@ -532,7 +532,6 @@ function ENT:ReloadMag()
 		end
 	end
 end
-
 
 
 function ENT:GetInaccuracy()
