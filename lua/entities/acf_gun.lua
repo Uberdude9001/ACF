@@ -126,7 +126,7 @@ function ENT:Initialize()
 		self.BulletData.PropMass = 0
 		self.BulletData.ProjMass = 0
 	
-	self.Inaccuracy 	= 1
+	self.Inaccuracy = 1
 	
 	self.Inputs = Wire_CreateInputs( self, { "Fire", "Unload", "Reload" } )
 	self.Outputs = WireLib.CreateSpecialOutputs( self, { "Ready", "AmmoCount", "Entity", "Shots Left", "Fire Rate", "Muzzle Weight", "Muzzle Velocity" }, { "NORMAL", "NORMAL", "ENTITY", "NORMAL", "NORMAL", "NORMAL", "NORMAL" } )
@@ -159,19 +159,19 @@ function MakeACF_Gun(Owner, Pos, Angle, Id)
 	Gun.Class = Lookup.gunclass
 	-- Custom BS for karbine. Per Gun ROF.
 	Gun.PGRoFmod = 1
-	if(Lookup.rofmod) then
+	if Lookup.rofmod then
 		Gun.PGRoFmod = math.max(0, Lookup.rofmod)
 	end
 	-- Custom BS for karbine. Magazine Size, Mag reload Time
 	Gun.CurrentShot = 0
 	Gun.MagSize = 1
-	if(Lookup.magsize) then
+	if Lookup.magsize then
 		Gun.MagSize = math.max(Gun.MagSize, Lookup.magsize)
 	else
 		Gun.Inputs = Wire_AdjustInputs( Gun, { "Fire", "Unload" } )
 	end
 	Gun.MagReload = 0
-	if(Lookup.magreload) then
+	if Lookup.magreload then
 		Gun.MagReload = math.max(Gun.MagReload, Lookup.magreload)
 	end
 	
@@ -232,6 +232,7 @@ function MakeACF_Gun(Owner, Pos, Angle, Id)
 	local phys = Gun:GetPhysicsObject()  	
 	if IsValid( phys ) then
 		phys:SetMass( Gun.Mass ) 
+		phys:EnableMotion(0)
 	end 
 	
 	Gun:UpdateOverlayText()
@@ -393,25 +394,29 @@ end
 
 function ENT:TriggerInput( iname, value )
 	
-	if (iname == "Unload" and value > 0) then
+	if iname == "Unload" and value > 0 then
 		self:UnloadAmmo()
-	elseif ( iname == "Fire" and value > 0 and ACF.GunfireEnabled ) then
-		if self.NextFire < CurTime() then
+	elseif iname == "Fire" and value > 0 and ACF.GunfireEnabled then
+		local tracedata = {}
+			trace.start = this:GetPos()
+			trace.endpos = this:GetAttachment( 1 ).Pos
+			trace.mask = MASK_NPCWORLDSTATIC
+		if self.NextFire < CurTime() and not util.TraceLine(tracedata).hit then
 			self.User = self:GetUser(self.Inputs.Fire.Src) or self.Owner
 			if not IsValid(self.User) then self.User = self.Owner end
 			self:FireShell()
 			self:Think()
 		end
 		self.Firing = true
-	elseif ( iname == "Fire" and value <= 0 ) then
+	elseif iname == "Fire" and value <= 0 then
 		self.Firing = false
-	elseif ( iname == "Reload" and value ~= 0 ) then
+	elseif iname == "Reload" and value ~= 0 then
 		self.Reloading = true
 	end		
 end
 
 local function RetDist( enta, entb )
-	if not ((enta and enta:IsValid()) or (entb and entb:IsValid())) then return 0 end
+	if not (enta and IsValid(enta)) or (entb and IsValid(entb)) then return 0 end
 	disp = enta:GetPos() - entb:GetPos()
 	dist = math.sqrt( disp.x * disp.x + disp.y * disp.y + disp.z * disp.z )
 	return dist
@@ -451,7 +456,7 @@ function ENT:Think()
 		Wire_TriggerOutput(self, "AmmoCount", Ammo)
 		
 		
-		if( self.MagSize ) then
+		if self.MagSize then
 			Wire_TriggerOutput(self, "Shots Left", self.MagSize - self.CurrentShot)
 		else
 			Wire_TriggerOutput(self, "Shots Left", 1)
@@ -493,34 +498,28 @@ function ENT:CheckWeight()
 	local mass = self:GetPhysicsObject():GetMass()
 	local maxmass = GetConVarNumber("bnk_maxweight") * 1000 + 999
 	
-	local chk = false
-	
 	local allents = constraint.GetAllConstrainedEntities( self )
 	for _, ent in pairs(allents) do
-		if (ent and ent:IsValid() and not ent:IsPlayer() and not (ent == self)) then
+		if ent and IsValid(ent) and not ent:IsPlayer() and not ent == self then
 			local phys = ent:GetPhysicsObject()
-			if(phys:IsValid()) then
+			if IsValid(phys) then
 				mass = mass + phys:GetMass()
 			end
 		end
 	end
 	
-	if( mass < maxmass ) then
-		chk = true
-	end
-	
-	return chk
+	return mass < maxmass
 end
 
 function ENT:ReloadMag()
-	if(self.IsUnderWeight == nil) then
+	if self.IsUnderWeight == nil then
 		self.IsUnderWeight = true
-		if(ISBNK) then
+		if ISBNK then
 			self.IsUnderWeight = self:CheckWeight()
 		end
 	end
-	if ( (self.CurrentShot > 0) and self.IsUnderWeight and self.Ready and self:GetPhysicsObject():GetMass() >= self.Mass and not self:GetParent():IsValid() ) then
-		if ( ACF.RoundTypes[self.BulletData.Type] ) then		--Check if the roundtype loaded actually exists
+	if self.CurrentShot > 0 and self.IsUnderWeight and self.Ready and self:GetPhysicsObject():GetMass() >= self.Mass then
+		if ACF.RoundTypes[self.BulletData.Type] then		--Check if the roundtype loaded actually exists
 			self:LoadAmmo(self.MagReload, false)	
 			self:EmitSound("weapons/357/357_reload4.wav",500,100)
 			self.CurrentShot = 0
@@ -540,7 +539,7 @@ function ENT:GetInaccuracy()
 	local SpreadScale = ACF.SpreadScale
 	local IaccMult = 1
 	
-	if (self.ACF.Health and self.ACF.MaxHealth) then
+	if self.ACF.Health and self.ACF.MaxHealth then
 		IaccMult = math.Clamp(((1 - SpreadScale) / (0.5)) * ((self.ACF.Health/self.ACF.MaxHealth) - 1) + 1, 1, SpreadScale)
 	end
 	
@@ -555,30 +554,30 @@ function ENT:FireShell()
 	
 	local CanDo = hook.Run("ACF_FireShell", self, self.BulletData )
 	if CanDo == false then return end
-	if(self.IsUnderWeight == nil) then
+	if self.IsUnderWeight == nil then
 		self.IsUnderWeight = true
-		if(ISBNK) then
+		if ISBNK then
 			self.IsUnderWeight = self:CheckWeight()
 		end
 	end
 	
 	local bool = true
-	if(ISSITP) then
-		if(self.sitp_spacetype != "space" and self.sitp_spacetype != "planet") then
+	if ISSITP then
+		if self.sitp_spacetype != "space" and self.sitp_spacetype != "planet" then
 			bool = false
 		end
-		if(self.sitp_core == false) then
+		if self.sitp_core == false then
 			bool = false
 		end
 	end
-	if ( bool and self.IsUnderWeight and self.Ready and self:GetPhysicsObject():GetMass() >= self.Mass and not self:GetParent():IsValid() ) then
+	if bool and self.IsUnderWeight and self.Ready and self:GetPhysicsObject():GetMass() >= self.Mass then
 		Blacklist = {}
 		if not ACF.AmmoBlacklist[self.BulletData.Type] then
 			Blacklist = {}
 		else
 			Blacklist = ACF.AmmoBlacklist[self.BulletData.Type]	
 		end
-		if ( ACF.RoundTypes[self.BulletData.Type] and !table.HasValue( Blacklist, self.Class ) ) then		--Check if the roundtype loaded actually exists
+		if ACF.RoundTypes[self.BulletData.Type] and !table.HasValue( Blacklist, self.Class ) then		--Check if the roundtype loaded actually exists
 		
 			local MuzzlePos = self:LocalToWorld(self.Muzzle)
 			local MuzzleVec = self:GetForward()
@@ -598,13 +597,13 @@ function ENT:FireShell()
 			self:CreateShell( self.BulletData )
 		
 			local Gun = self:GetPhysicsObject()  	
-			if (Gun:IsValid()) then 	
-				if(!self.acflastupdatemass) or (self.acflastupdatemass < (CurTime() + 10)) then
+			if IsValid(Gun) then 	
+				if not self.acflastupdatemass or self.acflastupdatemass < CurTime() + 10 then
 					ACF_CalcMassRatio( self )
 				end
 				local pushscale = GetConVarNumber("acf_recoilpush") or 1
 				local physratio = 1 * pushscale
-				if(self.acfphystotal) and (self.acftotal) then
+				if self.acfphystotal and self.acftotal then
 					physratio = self.acfphystotal / self.acftotal
 				end
 				Gun:ApplyForceCenter( self:GetForward() * -(self.BulletData.ProjMass * self.BulletData.MuzzleVel * 39.37 + self.BulletData.PropMass * 3000 * 39.37) * physratio)			
@@ -612,7 +611,7 @@ function ENT:FireShell()
 			
 			self.Ready = false
 			self.CurrentShot = math.min(self.CurrentShot + 1, self.MagSize)
-			if((self.CurrentShot >= self.MagSize) and (self.MagSize > 1)) then
+			if self.CurrentShot >= self.MagSize and self.MagSize > 1 then
 				self:LoadAmmo(self.MagReload, false)	
 				self:EmitSound("weapons/357/357_reload4.wav",500,100)
 				self.CurrentShot = 0
@@ -640,13 +639,13 @@ function ENT:FindNextCrate()
 	local AmmoEnt = nil
 	local i = 0
 	
-	while i <= MaxAmmo and not (AmmoEnt and AmmoEnt:IsValid() and AmmoEnt.Ammo > 0) do
+	while i <= MaxAmmo and not (AmmoEnt and IsValid(AmmoEnt) and AmmoEnt.Ammo > 0) do
 		
 		self.CurAmmo = self.CurAmmo + 1
 		if self.CurAmmo > MaxAmmo then self.CurAmmo = 1 end
 		
 		AmmoEnt = self.AmmoLink[self.CurAmmo]
-		if AmmoEnt and AmmoEnt:IsValid() and AmmoEnt.Ammo > 0 and AmmoEnt.Load then
+		if AmmoEnt and IsValid(AmmoEnt) and AmmoEnt.Ammo > 0 and AmmoEnt.Load then
 			return AmmoEnt
 		end
 		AmmoEnt = nil
@@ -709,7 +708,7 @@ end
 function ENT:UnloadAmmo()
 	if not self.BulletData or not self.BulletData.Crate then return end -- Explanation: http://www.youtube.com/watch?v=dwjrui9oCVQ
 	local Crate = Entity( self.BulletData.Crate )
-	if Crate and Crate:IsValid() and self.BulletData.Type == Crate.BulletData.Type then
+	if Crate and IsValid(Crate) and self.BulletData.Type == Crate.BulletData.Type then
 		Crate.Ammo = Crate.Ammo+1
 	end
 	
@@ -747,7 +746,7 @@ function ENT:PreEntityCopy()
 	local info = {}
 	local entids = {}
 	for Key, Value in pairs(self.AmmoLink) do					--First clean the table of any invalid entities
-		if not Value:IsValid() then
+		if not IsValid(Value) then
 			table.remove(self.AmmoLink, Value)
 		end
 	end
@@ -766,12 +765,12 @@ end
 
 function ENT:PostEntityPaste( Player, Ent, CreatedEntities )
 
-	if (Ent.EntityMods) and (Ent.EntityMods.ACFAmmoLink) and (Ent.EntityMods.ACFAmmoLink.entities) then
+	if Ent.EntityMods and Ent.EntityMods.ACFAmmoLink and Ent.EntityMods.ACFAmmoLink.entities then
 		local AmmoLink = Ent.EntityMods.ACFAmmoLink
 		if AmmoLink.entities and table.Count(AmmoLink.entities) > 0 then
 			for _,AmmoID in pairs(AmmoLink.entities) do
 				local Ammo = CreatedEntities[ AmmoID ]
-				if Ammo and Ammo:IsValid() and Ammo:GetClass() == "acf_ammo" then
+				if Ammo and IsValid(Ammo) and Ammo:GetClass() == "acf_ammo" then
 					self:Link( Ammo )
 				end
 			end
