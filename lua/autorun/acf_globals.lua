@@ -25,7 +25,7 @@ ACF.HEDensity = 1.65	--HE Filler density (That's TNT density)
 ACF.HEFrag = 1500		--Mean fragment number for equal weight TNT and casing
 ACF.HEBlastPen = 0.4	--Blast penetration exponent based of HE power
 
-ACF.HEATMVScale = 1	--Filler KE to HEAT slug KE conversion expotential
+ACF.HEATMVScale = 0.77	--Filler KE to HEAT slug KE conversion expotential
 
 ACF.DragDiv = 40		--Drag fudge factor
 ACF.VelScale = 1		--Scale factor for the shell velocities in the game world
