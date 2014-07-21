@@ -42,3 +42,19 @@ ACF_defineGun("30mmRAC", {
 		propweight = 0.350
 	}
 } )
+
+ACF_defineGun("127mmRAC", {
+	name = "12.7",
+	desc = "brrtttt",
+	model = "models/rotarycannon/rotarycannon_127mm.mdl",
+	gunclass = "RAC",
+	caliber = 1.27,
+	weight = 100,
+	year = 666,
+	magsize = 100,
+	magreload = 1.5,
+	round = {
+		maxlength = 15.8,
+		propweight = 0.03
+	}
+} )
