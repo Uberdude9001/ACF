@@ -44,7 +44,7 @@ ACF_defineGun("30mmRAC", {
 } )
 
 ACF_defineGun("127mmRAC", {
-	name = "12.7",
+	name = "12.7mm Rotary Autocannon",
 	desc = "brrtttt",
 	model = "models/rotarycannon/rotarycannon_127mm.mdl",
 	gunclass = "RAC",
