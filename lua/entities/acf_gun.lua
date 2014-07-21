@@ -397,11 +397,7 @@ function ENT:TriggerInput( iname, value )
 	if iname == "Unload" and value > 0 then
 		self:UnloadAmmo()
 	elseif iname == "Fire" and value > 0 and ACF.GunfireEnabled then
-		local tracedata = {}
-			tracedata.start = self:GetPos()
-			tracedata.endpos = self:GetAttachment( 1 ).Pos
-			tracedata.mask = MASK_NPCWORLDSTATIC
-		if self.NextFire < CurTime() and not util.TraceLine(tracedata).hit then
+		if self.NextFire < CurTime() then
 			self.User = self:GetUser(self.Inputs.Fire.Src) or self.Owner
 			if not IsValid(self.User) then self.User = self.Owner end
 			self:FireShell()
