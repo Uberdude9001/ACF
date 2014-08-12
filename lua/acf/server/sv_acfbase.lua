@@ -220,7 +220,7 @@ function ACF_SquishyDamage( Entity , Energy , FrAera , Angle , Inflictor , Bone,
 	local HitRes = {}
 	local Damage = 0
 	local Target = {ACF = {Armour = 0.1}}		--We create a dummy table to pass armour values to the calc function
-	if Bone) then
+	if Bone then
 		
 		if Bone == 1 then		--This means we hit the head
 			Target.ACF.Armour = Mass*0.02	--Set the skull thickness as a percentage of Squishy weight, this gives us 2mm for a player, about 22mm for an Antlion Guard. Seems about right
