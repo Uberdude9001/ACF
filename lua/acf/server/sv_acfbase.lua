@@ -31,7 +31,7 @@ function ACF_Activate ( Entity , Recalc )
 	local Count
 	local PhysObj = Entity:GetPhysicsObject()
 	if PhysObj:GetMesh() then Count = #PhysObj:GetMesh() end
-	if IsValid(PhysObj) and Count and Count > 100 then
+	if IsValid(PhysObj) and Count and Count>100 then
 
 		if not Entity.ACF.Aera then
 			Entity.ACF.Aera = (PhysObj:GetSurfaceArea() * 6.45) * 0.52505066107
@@ -111,11 +111,17 @@ function ACF_Damage ( Entity , Energy , FrAera , Angle , Inflictor , Bone, Gun, 
 	if Entity.SpecialDamage then
 		return Entity:ACF_OnDamage( Entity , Energy , FrAera , Angle , Inflictor , Bone, Type )
 	elseif Activated == "Prop" then	
+		
 		return ACF_PropDamage( Entity , Energy , FrAera , Angle , Inflictor , Bone )
+		
 	elseif Activated == "Vehicle" then
+	
 		return ACF_VehicleDamage( Entity , Energy , FrAera , Angle , Inflictor , Bone, Gun )
+		
 	elseif Activated == "Squishy" then
+	
 		return ACF_SquishyDamage( Entity , Energy , FrAera , Angle , Inflictor , Bone, Gun )
+		
 	end
 	
 end
@@ -129,13 +135,14 @@ function ACF_CalcDamage( Entity , Energy , FrAera , Angle )
 	local Penetration = math.min( MaxPenetration , Armour )			--Clamp penetration to the armour thickness
 	
 	local HitRes = {}
-	
 	--BNK Stuff
 	local dmul = 1
-	if ISBNK and GetConVarNumber("sbox_godmode") == 1 then
-		dmul = 0
-	end
+	if ISBNK then
 	
+		if GetConVarNumber("sbox_godmode") == 1 then
+			dmul = 0
+		end
+	end
 	--SITP Stuff
 	local var = 1
 	if ISSITP then
@@ -147,7 +154,11 @@ function ACF_CalcDamage( Entity , Energy , FrAera , Angle )
 		end
 	end
 	
-	HitRes.Damage = var * dmul * (Penetration/Armour)^2 * FrAera	-- This is the volume of the hole caused by our projectile 
+	local Minor = math.sqrt(FrAera/3.14159) -- Calculating our semiminor axis
+	local Major = Minor/math.cos(Angle) -- Calculating our semiminor axis
+	local EllipsoidArea = 3.14159*Minor*Major -- Calculating area of ellipsoid given both axis
+
+	HitRes.Damage = var * dmul * (Penetration/Armour)^2 * EllipsoidArea	-- This is the volume of the hole caused by our projectile 
 	HitRes.Overkill = (MaxPenetration - Penetration)
 	HitRes.Loss = Penetration/MaxPenetration
 	
@@ -237,7 +248,7 @@ function ACF_SquishyDamage( Entity , Energy , FrAera , Angle , Inflictor , Bone,
 			HitRes = ACF_CalcDamage( Target , Energy , FrAera , Angle )
 			
 		elseif Bone == 4 or Bone == 5 then 		--This means we hit an arm or appendage, so ormal damage, no armour
-	
+		
 			Target.ACF.Armour = Size*0.2*0.02							--A fitht the bounding radius seems about right for most critters appendages
 			HitRes = ACF_CalcDamage( Target , Energy , FrAera , 0 )		--This is flesh, angle doesn't matter
 			Damage = HitRes.Damage*30							--Limbs are somewhat less important
@@ -283,7 +294,7 @@ function ACF_SquishyDamage( Entity , Energy , FrAera , Angle , Inflictor , Bone,
 	
 	--SITP stuff
 	local var = 1
-	if not Entity.sitp_spacetype then
+	if notEntity.sitp_spacetype then
 		Entity.sitp_spacetype = "space"
 	end
 	if Entity.sitp_spacetype == "homeworld" then
