@@ -53,4 +53,19 @@ ACF_defineGun("14.5mmMG", {
 		propweight = 0.04
 	}
 } )
+
+ACF_defineGun("20mmMG", {
+	name = "20mm Machinegun",
+	desc = "The 20mm MG is practically a cannon in its own right; the weight and recoil made it difficult to mount on light land vehicles, though it was adapted for use on both aircraft and ships.",
+	model = "models/machinegun/machinegun_20mm.mdl",
+	gunclass = "MG",
+	caliber = 2.0,
+	weight = 95,
+	year = 1935,
+	rofmod = 0.55,
+	round = {
+		maxlength = 22,
+		propweight = 0.09
+	}
+} )
 	
