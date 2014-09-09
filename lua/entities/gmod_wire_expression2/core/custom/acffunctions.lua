@@ -447,7 +447,7 @@ e2function number entity:acfSpread()
 	if not (isGun(this) or isAmmo(this)) then return 0 end
 	
 	local Spread = this.GetInaccuracy and this:GetInaccuracy() or this.Inaccuracy or 0
-	if not restrictInfo(self, this) this.BulletData["Type"] == "FL" then
+	if not restrictInfo(self, this) and this.BulletData["Type"] == "FL" then
 		return Spread + (this.BulletData["FlechetteSpread"] or 0)
 	end
 	return Spread
