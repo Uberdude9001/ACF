@@ -212,7 +212,7 @@ e2function number entity:acfMaxPower()
 	if not isEngine(this) then return 0 end
 	
 	if this.iselec then return math.floor(this.PeakTorque * this.LimitRPM / (4*9548.8)) or 0
-	else return math.floor(this.PeakTorque * this.PeakMaxRPM / 9548.8 or 0 end
+	else return math.floor(this.PeakTorque * this.PeakMaxRPM / 9548.8) or 0 end
 end
 
 -- Returns the idle rpm of an ACF engine
