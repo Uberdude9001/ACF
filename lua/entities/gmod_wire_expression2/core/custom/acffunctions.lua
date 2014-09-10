@@ -559,7 +559,7 @@ end
 -- Returns the muzzle velocity of the ammo in a crate or gun
 e2function number entity:acfMuzzleVel()
 	if not (isAmmo(this) or isGun(this)) or restrictInfo(self, this) then return 0 end
-	return math.Round(this.BulletData["MuzzleVel"]*ACF.VelScale or 0,3)
+	return math.Round((this.BulletData["MuzzleVel"] or 0)*ACF.VelScale,3)
 end
 
 -- Returns the mass of the projectile in a crate or gun
