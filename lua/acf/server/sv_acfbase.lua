@@ -145,7 +145,7 @@ function ACF_CalcDamage( Entity , Energy , FrAera , Angle )
 	if ISSITP then
 		if not Entity.sitp_spacetype then
 			Entity.sitp_spacetype = "space"
-		elseif Entity.sitp_spacetype != "planet" then
+		elseif Entity.sitp_spacetype ~= "planet" then
 			var = 0
 		end
 	end
@@ -212,9 +212,8 @@ function ACF_SquishyDamage( Entity , Energy , FrAera , Angle , Inflictor , Bone,
 	local HitRes = {}
 	local Damage = 0
 	local Target = {ACF = {Armour = 0.1}}		--We create a dummy table to pass armour values to the calc function
-	if (Bone) then
-		
-		if ( Bone == 1 ) then		--This means we hit the head
+	if Bone then
+		if Bone == 1 then		--This means we hit the head
 			Target.ACF.Armour = Mass*0.02	--Set the skull thickness as a percentage of Squishy weight, this gives us 2mm for a player, about 22mm for an Antlion Guard. Seems about right
 			HitRes = ACF_CalcDamage( Target , Energy , FrAera , Angle )		--This is hard bone, so still sensitive to impact angle
 			Damage = HitRes.Damage*20
@@ -227,7 +226,7 @@ function ACF_SquishyDamage( Entity , Energy , FrAera , Angle , Inflictor , Bone,
 			HitRes = ACF_CalcDamage( Target , Energy , FrAera , Angle )	
 			Damage = Damage + HitRes.Damage*20				
 			
-		elseif ( Bone == 0 or Bone == 2 or Bone == 3 ) then		--This means we hit the torso. We are assuming body armour/tough exoskeleton/zombie don't give fuck here, so it's tough
+		elseif Bone == 0 or Bone == 2 or Bone == 3 then		--This means we hit the torso. We are assuming body armour/tough exoskeleton/zombie don't give fuck here, so it's tough
 			Target.ACF.Armour = Mass*0.08	--Set the armour thickness as a percentage of Squishy weight, this gives us 8mm for a player, about 90mm for an Antlion Guard. Seems about right
 			HitRes = ACF_CalcDamage( Target , Energy , FrAera , Angle )		--Armour plate,, so sensitive to impact angle
 			Damage = HitRes.Damage*5
@@ -239,19 +238,19 @@ function ACF_SquishyDamage( Entity , Energy , FrAera , Angle , Inflictor , Bone,
 			Target.ACF.Armour = Mass*0.185	--Then to check if we can get out of the other side, 2x armour + 1x guts
 			HitRes = ACF_CalcDamage( Target , Energy , FrAera , Angle )
 			
-		elseif ( Bone == 4 or Bone == 5 ) then 		--This means we hit an arm or appendage, so ormal damage, no armour
+		elseif Bone == 4 or Bone == 5 then 		--This means we hit an arm or appendage, so ormal damage, no armour
 		
 			Target.ACF.Armour = Size*0.2*0.02							--A fitht the bounding radius seems about right for most critters appendages
 			HitRes = ACF_CalcDamage( Target , Energy , FrAera , 0 )		--This is flesh, angle doesn't matter
 			Damage = HitRes.Damage*30							--Limbs are somewhat less important
 		
-		elseif ( Bone == 6 or Bone == 7 ) then
+		elseif Bone == 6 or Bone == 7 then
 		
 			Target.ACF.Armour = Size*0.2*0.02							--A fitht the bounding radius seems about right for most critters appendages
 			HitRes = ACF_CalcDamage( Target , Energy , FrAera , 0 )		--This is flesh, angle doesn't matter
 			Damage = HitRes.Damage*30							--Limbs are somewhat less important
 			
-		elseif ( Bone == 10 ) then					--This means we hit a backpack or something
+		elseif Bone == 10 then					--This means we hit a backpack or something
 		
 			Target.ACF.Armour = Size*0.1*0.02							--Arbitrary size, most of the gear carried is pretty small
 			HitRes = ACF_CalcDamage( Target , Energy , FrAera , 0 )		--This is random junk, angle doesn't matter
@@ -273,23 +272,18 @@ function ACF_SquishyDamage( Entity , Energy , FrAera , Angle , Inflictor , Bone,
 	
 	end
 	
-	local dmul = 2.5
+	local dmul = 5
 	
 	--BNK stuff
-	if (ISBNK) then
-		if(Entity.freq and Inflictor.freq) then
-			if (Entity != Inflictor) and (Entity.freq == Inflictor.freq) then
-				dmul = 0
-			end
-		end
+	if ISBNK and Entity.freq and Inflictor.freq and Entity ~= Inflictor and Entity.freq == Inflictor.freq then
+		dmul = 0
 	end
 	
 	--SITP stuff
 	local var = 1
-	if(!Entity.sitp_spacetype) then
+	if not Entity.sitp_spacetype then
 		Entity.sitp_spacetype = "space"
-	end
-	if(Entity.sitp_spacetype == "homeworld") then
+	elseif Entity.sitp_spacetype == "homeworld" then
 		var = 0
 	end
 	
@@ -316,8 +310,7 @@ function ACF_GetAllPhysicalConstraints( ent, ResultTable )
 
 	local ResultTable = ResultTable or {}
 	
-	if not IsValid( ent ) then return end
-	if ResultTable[ ent ] then return end
+	if not IsValid( ent ) or ResultTable[ ent ] then return end
 	
 	ResultTable[ ent ] = ent
 	
@@ -345,8 +338,7 @@ function ACF_GetAllChildren( ent, ResultTable )
 	
 	local ResultTable = ResultTable or {}
 	
-	if not IsValid( ent ) then return end
-	if ResultTable[ ent ] then return end
+	if not IsValid( ent ) or ResultTable[ ent ] then return end
 	
 	ResultTable[ ent ] = ent
 	
