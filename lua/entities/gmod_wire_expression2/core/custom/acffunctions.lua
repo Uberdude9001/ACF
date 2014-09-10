@@ -218,11 +218,6 @@ end
 -- Returns the power in kW of an ACF engine
 e2function number entity:acfMaxPower()
 	if not isEngine(this) then return 0 end
-<<<<<<< HEAD
-	
-	if this.iselec then return math.floor(this.PeakTorque * this.LimitRPM / (4*9548.8)) or 0
-	else return math.floor(this.PeakTorque * this.PeakMaxRPM / 9548.8) or 0 end
-=======
 	local peakpower
 	if this.iselec then
 		peakpower = math.floor(this.PeakTorque * this.LimitRPM / (4*9548.8))
@@ -230,7 +225,6 @@ e2function number entity:acfMaxPower()
 		peakpower = math.floor(this.PeakTorque * this.PeakMaxRPM / 9548.8)
 	end
 	return peakpower or 0
->>>>>>> parent of 5eb4978... Optimization of e2 funcs
 end
 
 -- Returns the idle rpm of an ACF engine
@@ -498,12 +492,8 @@ end
 e2function number entity:acfSpread()
 	if not (isGun(this) or isAmmo(this)) then return 0 end
 	local Spread = this.GetInaccuracy and this:GetInaccuracy() or this.Inaccuracy or 0
-<<<<<<< HEAD
-	if not restrictInfo(self, this) and this.BulletData["Type"] == "FL" then
-=======
 	if this.BulletData["Type"] == "FL" then
 		if restrictInfo(self, this) then return Spread end
->>>>>>> parent of 5eb4978... Optimization of e2 funcs
 		return Spread + (this.BulletData["FlechetteSpread"] or 0)
 	end
 	return Spread
@@ -559,16 +549,11 @@ __e2setcost( 20 )
 
 --Returns the number of rounds in active ammo crates linked to an ACF weapon
 e2function number entity:acfAmmoCount()
-<<<<<<< HEAD
-	if not isGun(this) or restrictInfo(self, this) then return 0 end
-	
-=======
 	if not isGun(this) then return 0 end
 	if restrictInfo(self, this) then return 0 end
->>>>>>> parent of 5eb4978... Optimization of e2 funcs
 	local Ammo = 0
 	for Key,AmmoEnt in pairs(this.AmmoLink) do
-		if AmmoEnt and IsValid(AmmoEnt) and AmmoEnt["Load"] then
+		if AmmoEnt and AmmoEnt:IsValid() and AmmoEnt["Load"] then
 			Ammo = Ammo + (AmmoEnt.Ammo or 0)
 		end
 	end
@@ -581,7 +566,7 @@ e2function number entity:acfTotalAmmoCount()
 	if restrictInfo(self, this) then return 0 end
 	local Ammo = 0
 	for Key,AmmoEnt in pairs(this.AmmoLink) do
-		if AmmoEnt and IsValid(AmmoEnt) then
+		if AmmoEnt and AmmoEnt:IsValid() then
 			Ammo = Ammo + (AmmoEnt.Ammo or 0)
 		end
 	end
@@ -628,12 +613,8 @@ end
 
 -- Returns the muzzle velocity of the ammo in a crate or gun
 e2function number entity:acfMuzzleVel()
-<<<<<<< HEAD
-	if not (isAmmo(this) or isGun(this)) or restrictInfo(self, this) then return 0 end
-=======
 	if not (isAmmo(this) or isGun(this)) then return 0 end
 	if restrictInfo(self, this) then return 0 end
->>>>>>> parent of 5eb4978... Optimization of e2 funcs
 	return math.Round((this.BulletData["MuzzleVel"] or 0)*ACF.VelScale,3)
 end
 
