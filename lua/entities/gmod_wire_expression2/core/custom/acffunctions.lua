@@ -500,9 +500,9 @@ __e2setcost( 20 )
 e2function number entity:acfAmmoCount()
 	if not isGun(this) or restrictInfo(self, this) then return 0 end
 	
-	local Ammo
+	local Ammo = 0
 	for Key,AmmoEnt in pairs(this.AmmoLink) do
-		if AmmoEnt and AmmoEnt:IsValid() and AmmoEnt["Load"] then
+		if AmmoEnt and IsValid(AmmoEnt) and AmmoEnt["Load"] then
 			Ammo = Ammo + (AmmoEnt.Ammo or 0)
 		end
 	end
@@ -515,7 +515,7 @@ e2function number entity:acfTotalAmmoCount()
 	if restrictInfo(self, this) then return 0 end
 	local Ammo = 0
 	for Key,AmmoEnt in pairs(this.AmmoLink) do
-		if AmmoEnt and AmmoEnt:IsValid() then
+		if AmmoEnt and IsValid(AmmoEnt) then
 			Ammo = Ammo + (AmmoEnt.Ammo or 0)
 		end
 	end
