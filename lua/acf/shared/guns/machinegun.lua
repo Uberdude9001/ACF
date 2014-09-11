@@ -14,7 +14,7 @@ ACF_defineGunClass("MG", {
 ACF_defineGun("7.62mmMG", { --id
 	name = "7.62mm Machinegun",
 	desc = "The 7.62mm is effective against infantry, but its usefulness against armor is laughable at best.",
-	model = "models/machinegun/machinegun_127mm.mdl",
+	model = "models/machinegun/machinegun_762mm.mdl",
 	gunclass = "MG",
 	caliber = 0.762,
 	weight = 15,
