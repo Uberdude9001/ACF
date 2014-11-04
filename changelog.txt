@@ -1,75 +1,78 @@
-r400
+r500
 --For an extended version history, please visit the github changelog.  https://github.com/nrlulz/ACF/commits/master
 
-*r486
---New cannon and short cannon models
---Short cannons added, which trade penetration and accuracy for size and light weight
---37mm cannon added
---Large b6, v8, v12 engines buffed
---Small v12, v12 special slightly buffed
---New multifuel v6 special added
---Turbines have much more power, but now require fuel
+*r503
+-Partial workaround for HE bug; doesn't eliminate the problem, but helps catch some cases.
+-Added 20mm machinegun
+-20mm AC weight decreased to 225 kg, round length increased
+-20mm and 30mm HMG rounds/min halved; round length increased to compensate.  20mm clip reduced from 120 to 75. Overall damage output is similar.
+-Fix for quiet 203 howitzer
+-Fix for ACF sound tool not resetting 1.0L i4 special to proper pitch
+-Updated descriptions for i5/v10
+-Slightly reduced torque for 3.9L i5
+-Reduced flywheel inertia for 1.0L i4 special
+-Reduced flywheel inertia for 5.3L v10 special
+-Added 2.4L v6 special
+-Added 3.0L v12 special
+-Added gamerpaddy's new single, vtwin, and standalone electric models
+-Added Lazermaniac's new MG and HMG models
 
-*r487
---fixed something in cannon models
+*r504
+-Updated emotor standalone and single cylinder model bodygroups
+-Fixed 7.62mm MG model size
+-Fixed 20mm AC firing too fast
 
-*r489
---Short-barrel cannons adjusted: gun weight decreased a bit to account for heavier shells, RoF changed slightly.
+*r506
+-Added per-bullet callbacks OnPenetrated, OnRicochet, OnEndFlight, PreCalcFlight, PostCalcFlight.
+-HandlesOwnIteration bullet key to disable bullet iteration.
+-Battle DP mode can now optionally disable noclip.
 
-*r490
---Cannon and short-barrel cannon models are now skinnier
---CoH sounds fixed
---Small v12 petrol/diesel and medium v8 diesel weight slightly increased
---Large CVT torque rating increased from 3400 to 6000
---37mm cannon name fixed
---37mm short-barrel cannon rof adjusted
+*r507
+-Fixed v10 model physbox
+-Added i3 engines
 
-*r491
---New tank engine and misc sounds
+*r508
+-Fuel is now drained from all active tanks, instead of sequentially
+-Slightly nerfed 4.1L i5 diesel torque
+-Dropped 40mm HMG weight from 960 to 600, increased mag size from 30 to 35
+-MG/HMG recoloring fixed
+-Removed a few redundant sounds
 
-*r492
---Resampled new sounds to 44100 hz
+*r509
+-Fixed engine bug in r508
 
-*r493
---Diesel engines now have much more hp
---Diesels can take a bit more damage before performance starts to degrade
+*r514
+-ACF E2 funcs ported to starfall, courtesy of EpicG
+-Fixed acfRPM() not reporting 0 rpm on inactive engine
+-Fixed acfActive() not reporting the correct value for ammo
 
-*r494
---New tracers that are a bit brighter and much easier on older systems, courtesy of Techa
---Turbine fuel consumption doubled
---Diesel fuel is no longer explosive
---Refuel sound is much quieter
+*r515
+-Fixed update checker failing
+-Fixed refill crates not spawning correctly
+-Fixed ACF_CalcMassRatio not working when called on a non-physical child
+-Fixed E2/Starfall acfBlastRadius() returning incorrect values
+-Fixed armor tool not handling unconstrained parenting
+-Added physical mass, parented mass, and mass ratio output to armor tool reload
+-Smoke launcher weight dropped from 55kg to 25kg
+-Smoke launcher is now parentable
+-Flechettes now use radial spread instead of square
+-HE now takes ductility properly into account when dealing blast damage
+-HE shove no longer ignores the scale convar "acf_hepush"
+-HE now applies force to all props, not just physical props
+-HE shove is less potent
+-AP shove now takes parented mass into account
 
-*r495
--HEAT rebalanced: 
---HEAT HE reduced, 22% (down from 33%) of a HE shell of same caliber.
---HE effect is correctly sized
---penetrator loses less energy on initial penetration, but loses massive amounts on successive penetrations. End effect is layered armor is much more effective at stopping penetrator.
---penetrator deals 13.2x more damage to crates, roughly equal to an AP shell of the same caliber as the HEAT shell.
---penetrator deals 6.6x more damage to engines and fuel tanks, roughly half of an AP shell.
---penetrator damage to everything else is unchanged.
--Diesel explosions can be triggered by HE or HEAT.
--HE blast radius and blast energy is now correctly displayed on the tool and overlays.
+*r521
+-Added Looter's ACF tools subcategory (off by default)
+-Fixed starfall permissions
 
-*r496
--Large volume crates (2x4x4+) have bonus ammo and confer a bonus to fire rate or reload time.
--2x4x4 is +10% ammo, +2% fire rate / reload speed bonus
--4x8x8 is +50% ammo, +10% fire rate / reload speed bonus
--Guns without clips get a fire rate bonus, guns with clips have a reload speed bonus instead
--Updated gun definitions so they are defined similarly to engines -- each gun class has its own file
+*r522
+-Fixed issue caused by permissions change in r521
 
-*r497
--Built-in damage protection now won't override other hooks
+*r525
+-Fixed issue caused by permissions change in r521 again
+-Added function acfInfoRestricted() to starfall library
 
-*r500
--Crate RoF bonus doubled (maximum 20% bonus with 4x8x8, up from 10%)
--Made 50mm cannon default gun if trying to spawn a custom gun that doesn't exist
--SC no longer compatible with smoke rounds
--SL fire rate increased 33% (now ~25 seconds reload)
--75mm AL clip increased from 6 to 8 rounds
--75mm AL reload increased from 14 to 15 seconds
--100mm AL reload increased from 18 to 21 seconds
--SA can now load HEAT rounds
--Engines now save adjusted pitch, instead of using the value currently in sound tool
--Fuel drum can now be linked to engines
--5.2l v6 special: torque slightly nerfed, fuel efficiency increased 25%
+*r526
+-Added _Beckett's new C/SC/AL muzzle brakes and SL tube
+-Removed some broken sounds

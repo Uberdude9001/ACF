@@ -2,7 +2,7 @@
 ACF_defineGunClass("MO", {
 	spread = 0.64,
 	name = "Mortar",
-	desc = "Mortars are able to fire shells with useful payloads from a light weight gun, at the price of limited velocities.",
+	desc = "Mortars are able to fire shells with usefull payloads from a light weight gun, at the price of limited velocities.",
 	muzzleflash = "40mm_muzzleflash_noscale",
 	rofmod = 2,
 	sound = "weapons/ACF_Gun/mortar_new.wav",
@@ -13,7 +13,7 @@ ACF_defineGunClass("MO", {
 --add a gun to the class
 ACF_defineGun("60mmM", { --id
 	name = "60mm Mortar",
-	desc = "The 60mm is a common light infantry support weapon for indirect fire.",
+	desc = "The 60mm is a common light infantry support weapon, with a high rate of fire but a puny payload.",
 	model = "models/mortar/mortar_60mm.mdl",
 	gunclass = "MO",
 	caliber = 6.0,
@@ -27,7 +27,7 @@ ACF_defineGun("60mmM", { --id
 
 ACF_defineGun("80mmM", {
 	name = "80mm Mortar",
-	desc = "The 80mm is a common infantry support weapon for indirect fire.",
+	desc = "The 80mm is a common infantry support weapon, with a good bit more boom than its little cousin.",
 	model = "models/mortar/mortar_80mm.mdl",
 	gunclass = "MO",
 	caliber = 8.0,
@@ -41,7 +41,7 @@ ACF_defineGun("80mmM", {
 	
 ACF_defineGun("120mmM", {
 	name = "120mm Mortar",
-	desc = "\"The versatile 120 is sometimes vehicle-mounted to provide quick boomsplat to support the infantry.  Carries more boom in its boomsplat, has good HEAT performance, and is more accurate in high-angle firing.\"\n-Red the Autistic Mongoloid\n\n\"How do I physics\"-Red the Autistic Mongoloid",
+	desc = "The versatile 120 is sometimes vehicle-mounted to provide quick boomsplat to support the infantry.  Carries more boom in its boomsplat, has good HEAT performance, and is more accurate in high-angle firing.",
 	model = "models/mortar/mortar_120mm.mdl",
 	gunclass = "MO",
 	caliber = 12.0,

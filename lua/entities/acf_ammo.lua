@@ -1,3 +1,4 @@
+
 AddCSLuaFile()
 
 DEFINE_BASECLASS( "base_wire_entity" )
@@ -45,7 +46,7 @@ if CLIENT then
 			local vectab = { St, St2, En2, En}
 			local center = (St+En)/2
 			for I = 1, Amount do
-				local point = BezPoint(((I+Time)%Amount)/Amount, vectab)
+				local point = BezPoint(((((I+Time)%Amount))/Amount), vectab)
 				local ang = (point - center):Angle()
 				local MdlTbl = {
 					model = v.Model,
@@ -154,7 +155,8 @@ end
 
 function ENT:ACF_OnDamage( Entity, Energy, FrAera, Angle, Inflictor, Bone, Type )	--This function needs to return HitRes
 
-	local HitRes = ACF_PropDamage( Entity, Energy, FrAera, Angle, Inflictor )	--Calling the standard damage prop function
+	local Mul = ((Type == "HEAT" and 13.2) or 1) --Heat penetrators deal bonus damage to ammo, roughly equal to an AP round
+	local HitRes = ACF_PropDamage( Entity, Energy, FrAera * Mul, Angle, Inflictor )	--Calling the standard damage prop function
 	
 	if self.Exploding or not self.IsExplosive then return HitRes end
 	
@@ -174,7 +176,7 @@ function ENT:ACF_OnDamage( Entity, Energy, FrAera, Angle, Inflictor, Bone, Type 
 	if self.Damaged then return HitRes end
 	local Ratio = (HitRes.Damage/self.BulletData.RoundVolume)^0.2
 	--print(Ratio)
-	if Ratio * self.Capacity/self.Ammo > math.Rand(0,1) or Type == "HEAT" then  
+	if ( Ratio * self.Capacity/self.Ammo ) > math.Rand(0,1) then  
 		self.Inflictor = Inflictor
 		self.Damaged = CurTime() + (5 - Ratio*3)
 		Wire_TriggerOutput(self, "On Fire", 1)

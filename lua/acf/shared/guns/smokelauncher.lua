@@ -2,9 +2,9 @@
 ACF_defineGunClass("SL", {
 	spread = 0.32,
 	name = "Smoke Launcher",
-	desc = "Smoke launchers are used for concealing areas from the enemy's view.",
+	desc = "Smoke launcher to block an attacker's line of sight.",
 	muzzleflash = "40mm_muzzleflash_noscale",
-	rofmod = 15,
+	rofmod = 45,
 	sound = "weapons/ACF_Gun/mortar_new.wav",
 	soundDistance = "Mortar.Fire",
 	soundNormal = " "
@@ -14,10 +14,11 @@ ACF_defineGunClass("SL", {
 ACF_defineGun("40mmSL", { --id
 	name = "40mm Smoke Launcher",
 	desc = "",
-	model = "models/launcher/40mmgl.mdl",
+	model = "models/launcher/40mmsl.mdl",
 	gunclass = "SL",
+	canparent = true,
 	caliber = 4.0,
-	weight = 10,
+	weight = 25,
 	year = 1941,
 	round = {
 		maxlength = 15,

@@ -32,21 +32,26 @@ function Round.create( Gun, BulletData )
 	FlechetteData["KETransfert"] = BulletData["KETransfert"]
 
 	local I=1
-	local Inaccuracy
 	local MuzzleVec
-
-	--if ammo is cooking off, shoot in random direction
-	if Gun:GetClass() == "acf_ammo" then
+	
+	if Gun:GetClass() == "acf_ammo" then --if ammo is cooking off, shoot in random direction
+		local Inaccuracy
 		MuzzleVec = VectorRand()
+		for I = 1, BulletData["Flechettes"] do
+			Inaccuracy = VectorRand() / 360 * ((Gun.Inaccuracy or 0) + BulletData["FlechetteSpread"])
+			FlechetteData["Flight"] = (MuzzleVec+Inaccuracy):GetNormalized() * BulletData["MuzzleVel"] * 39.37 + Gun:GetVelocity()
+			ACF_CreateBullet( FlechetteData )
+		end
 	else
+		local BaseInaccuracy = math.tan(math.rad(Gun:GetInaccuracy()))
+		local AddInaccuracy = math.tan(math.rad(BulletData["FlechetteSpread"]))
 		MuzzleVec = Gun:GetForward()
-	end
-
-	--give each flechette unique trajectory and spawn it
-	for I = 1, BulletData["Flechettes"] do
-		Inaccuracy = VectorRand() / 360 * ((Gun.Inaccuracy or 0) + BulletData["FlechetteSpread"])
-		FlechetteData["Flight"] = (MuzzleVec+Inaccuracy):GetNormalized() * BulletData["MuzzleVel"] * 39.37 + Gun:GetVelocity()
-		ACF_CreateBullet( FlechetteData )
+		for I = 1, BulletData["Flechettes"] do
+			BaseSpread = BaseInaccuracy * (math.random() ^ (1 / math.Clamp(ACF.GunInaccuracyBias, 0.5, 4))) * (Gun:GetUp() * (2 * math.random() - 1) + Gun:GetRight() * (2 * math.random() - 1)):GetNormalized()
+			AddSpread = AddInaccuracy * (math.random() ^ (1 / math.Clamp(ACF.GunInaccuracyBias, 0.5, 4))) * (Gun:GetUp() * (2 * math.random() - 1) + Gun:GetRight() * (2 * math.random() - 1)):GetNormalized()
+			FlechetteData["Flight"] = (MuzzleVec+BaseSpread+AddSpread):GetNormalized() * BulletData["MuzzleVel"] * 39.37 + Gun:GetVelocity()
+			ACF_CreateBullet( FlechetteData )
+		end
 	end
 	
 end
@@ -178,7 +183,7 @@ function Round.propimpact( Index, Bullet, Target, HitNormal, HitPos, Bone )
 
 		if HitRes.Overkill > 0 then
 			table.insert( Bullet["Filter"] , Target )					--"Penetrate" (Ingoring the prop for the retry trace)
-			--ACF_Spall( HitPos , Bullet["Flight"] , Bullet["Filter"] , Energy.Kinetic*HitRes.Loss , Bullet["Caliber"] , Target.ACF.Armour , Bullet["Owner"] ) --Do some spalling
+			ACF_Spall( HitPos , Bullet["Flight"] , Bullet["Filter"] , Energy.Kinetic*HitRes.Loss , Bullet["Caliber"] , Target.ACF.Armour , Bullet["Owner"] ) --Do some spalling
 			Bullet["Flight"] = Bullet["Flight"]:GetNormalized() * (Energy.Kinetic*(1-HitRes.Loss)*2000/Bullet["ProjMass"])^0.5 * 39.37
 			return "Penetrated"
 		elseif HitRes.Ricochet then

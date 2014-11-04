@@ -2,7 +2,7 @@ ACF = {}
 ACF.AmmoTypes = {}
 ACF.MenuFunc = {}
 ACF.AmmoBlacklist = {}
-ACF.Version = 500 -- REMEMBER TO CHANGE THIS FOR GODS SAKE, OMFG!!!!!!! -wrex
+ACF.Version = 526 -- REMEMBER TO CHANGE THIS FOR GODS SAKE, OMFG!!!!!!! -wrex   Update the changelog too! -Ferv
 ACF.CurrentVersion = 0 -- just defining a variable, do not change
 
 ACF.Year = 1945
@@ -14,7 +14,7 @@ ACF.KinFudgeFactor = 2.1	--True kinetic would be 2, over that it's speed biaised
 ACF.KEtoRHA = 0.25		--Empirical conversion from (kinetic energy in KJ)/(Aera in Cm2) to RHA penetration
 ACF.GroundtoRHA = 0.05		--How much mm of steel is a mm of ground worth (Real soil is about 0.15
 ACF.KEtoSpall = 1
-ACF.AmmoMod = 1		-- Ammo modifier. 1 is 1x the amount of ammo
+ACF.AmmoMod = 0.6		-- Ammo modifier. 1 is 1x the amount of ammo
 ACF.ArmorMod = 1
 ACF.Spalling = 0
 ACF.GunfireEnabled = true
@@ -25,7 +25,7 @@ ACF.HEDensity = 1.65	--HE Filler density (That's TNT density)
 ACF.HEFrag = 1500		--Mean fragment number for equal weight TNT and casing
 ACF.HEBlastPen = 0.4	--Blast penetration exponent based of HE power
 
-ACF.HEATMVScale = 0.77	--Filler KE to HEAT slug KE conversion expotential
+ACF.HEATMVScale = 0.73	--Filler KE to HEAT slug KE conversion expotential
 
 ACF.DragDiv = 40		--Drag fudge factor
 ACF.VelScale = 1		--Scale factor for the shell velocities in the game world
@@ -84,6 +84,7 @@ CreateConVar('sbox_max_acf_gun', 12)
 CreateConVar('sbox_max_acf_ammo', 32)
 CreateConVar('sbox_max_acf_misc', 32)
 CreateConVar('acf_meshvalue', 1)
+CreateConVar("sbox_acf_restrictinfo", 1) -- 0=any, 1=owned
 
 AddCSLuaFile()
 AddCSLuaFile( "acf/client/cl_acfballistics.lua" )
@@ -131,7 +132,7 @@ elseif CLIENT then
 	killicon.Add( "acf_SA", "HUD/killicons/acf_SA", Color( 200, 200, 48, 255 ) )
 	killicon.Add( "acf_ammo", "HUD/killicons/acf_ammo", Color( 200, 200, 48, 255 ) )
 	
-	CreateConVar("acf_cl_particlemul", 0.2)
+	CreateConVar("acf_cl_particlemul", 1)
 end
 
 include("acf/shared/rounds/roundap.lua")
@@ -161,6 +162,26 @@ game.AddParticles("particles/explosion1.pcf")
 game.AddParticles("particles/rocket_motor.pcf")
 
 game.AddDecal("GunShot1", "decals/METAL/shot5")
+
+-- Add the ACF tool category
+if CLIENT then
+
+	ACF.CustomToolCategory = CreateClientConVar( "acf_tool_category", 0, true, false );
+
+	if( ACF.CustomToolCategory:GetBool() ) then
+
+		language.Add( "spawnmenu.tools.acf", "ACF" );
+
+		-- We use this hook so that the ACF category is always at the top
+		hook.Add( "AddToolMenuTabs", "CreateACFCategory", function()
+
+			spawnmenu.AddToolCategory( "Main", "ACF", "#spawnmenu.tools.acf" );
+
+		end );
+
+	end
+
+end
 
 timer.Simple( 0, function()
 	for Class,Table in pairs(ACF.Classes["GunClass"]) do
@@ -207,12 +228,21 @@ function ACF_CalcMassRatio( obj )
 	local Mass = 0
 	local PhysMass = 0
 	
+	-- find the physical parent highest up the chain
+	local Parent = obj
+	local depth = 0
+	
+	while Parent:GetParent():IsValid() and depth<6 do
+		Parent = Parent:GetParent()
+		depth = depth + 1
+	end
+	
 	-- get the shit that is physically attached to the vehicle
-	local PhysEnts = ACF_GetAllPhysicalConstraints( obj )
+	local PhysEnts = ACF_GetAllPhysicalConstraints( Parent )
 	
 	-- add any parented but not constrained props you sneaky bastards
 	local AllEnts = table.Copy( PhysEnts )
-	for k, v in pairs( PhysEnts ) do
+	for k, v in pairs( AllEnts ) do
 		
 		table.Merge( AllEnts, ACF_GetAllChildren( v ) )
 	
@@ -297,9 +327,8 @@ else
 end
 
 function ACF_UpdateChecking( )
-	
 	http.Fetch("https://github.com/nrlulz/ACF",function(contents,size)
-		local rev = tonumber(string.match( contents, "history\"></span>\n%s*(%d+)\n%s*</span>" ))
+		local rev = tonumber(string.match( contents, "%s*(%d+)\n%s*</span>\n%s*commits" )) or 0 --"history\"></span>\n%s*(%d+)\n%s*</span>"
 		if rev and ACF.Version >= rev then
 			print("[ACF] ACF Is Up To Date, Latest Version: "..rev)
 		elseif !rev then
