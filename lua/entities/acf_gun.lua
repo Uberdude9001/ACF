@@ -115,7 +115,6 @@ function ENT:Initialize()
 	self.LastSend = 0
 	self.LastLoadDuration = 0
 	self.Owner = self
-	self.Parentable = false
 	
 	self.IsMaster = true
 	self.AmmoLink = {}
@@ -158,22 +157,26 @@ function MakeACF_Gun(Owner, Pos, Angle, Id)
 	Gun.Model = Lookup.model
 	Gun.Mass = Lookup.weight
 	Gun.Class = Lookup.gunclass
-	Gun.Parentable = Lookup.canparent
+	
 	-- Custom BS for karbine. Per Gun ROF.
 	Gun.PGRoFmod = 1
-	if(Lookup.rofmod) then
+	
+	if Lookup.rofmod then
 		Gun.PGRoFmod = math.max(0, Lookup.rofmod)
 	end
+	
 	-- Custom BS for karbine. Magazine Size, Mag reload Time
 	Gun.CurrentShot = 0
 	Gun.MagSize = 1
-	if(Lookup.magsize) then
+	
+	if Lookup.magsize then
 		Gun.MagSize = math.max(Gun.MagSize, Lookup.magsize)
 	else
 		Gun.Inputs = Wire_AdjustInputs( Gun, { "Fire", "Unload" } )
 	end
+	
 	Gun.MagReload = 0
-	if(Lookup.magreload) then
+	if Lookup.magreload then
 		Gun.MagReload = math.max(Gun.MagReload, Lookup.magreload)
 	end
 	
@@ -395,9 +398,9 @@ end
 
 function ENT:TriggerInput( iname, value )
 	
-	if (iname == "Unload" and value > 0) then
+	if iname == "Unload" and value > 0 then
 		self:UnloadAmmo()
-	elseif ( iname == "Fire" and value > 0 and ACF.GunfireEnabled ) then
+	elseif iname == "Fire" and value > 0 and ACF.GunfireEnabled then
 		if self.NextFire < CurTime() then
 			self.User = self:GetUser(self.Inputs.Fire.Src) or self.Owner
 			if not IsValid(self.User) then self.User = self.Owner end
@@ -405,15 +408,15 @@ function ENT:TriggerInput( iname, value )
 			self:Think()
 		end
 		self.Firing = true
-	elseif ( iname == "Fire" and value <= 0 ) then
+	elseif iname == "Fire" and value <= 0 then
 		self.Firing = false
-	elseif ( iname == "Reload" and value ~= 0 ) then
+	elseif iname == "Reload" and value ~= 0 then
 		self.Reloading = true
 	end		
 end
 
 local function RetDist( enta, entb )
-	if not ((enta and enta:IsValid()) or (entb and entb:IsValid())) then return 0 end
+	if not (enta and IsValid(enta)) or (entb and IsValid(entb)) then return 0 end
 	disp = enta:GetPos() - entb:GetPos()
 	dist = math.sqrt( disp.x * disp.x + disp.y * disp.y + disp.z * disp.z )
 	return dist
@@ -453,7 +456,7 @@ function ENT:Think()
 		Wire_TriggerOutput(self, "AmmoCount", Ammo)
 		
 		
-		if( self.MagSize ) then
+		if self.MagSize then
 			Wire_TriggerOutput(self, "Shots Left", self.MagSize - self.CurrentShot)
 		else
 			Wire_TriggerOutput(self, "Shots Left", 1)
@@ -499,15 +502,15 @@ function ENT:CheckWeight()
 	
 	local allents = constraint.GetAllConstrainedEntities( self )
 	for _, ent in pairs(allents) do
-		if (ent and ent:IsValid() and not ent:IsPlayer() and not (ent == self)) then
+		if ent and IsValid(ent) and not ent:IsPlayer() and ent ~= self then
 			local phys = ent:GetPhysicsObject()
-			if(phys:IsValid()) then
+			if IsValid(phys) then
 				mass = mass + phys:GetMass()
 			end
 		end
 	end
 	
-	if( mass < maxmass ) then
+	if mass < maxmass then
 		chk = true
 	end
 	
@@ -515,14 +518,15 @@ function ENT:CheckWeight()
 end
 
 function ENT:ReloadMag()
-	if(self.IsUnderWeight == nil) then
+	if self.IsUnderWeight == nil then
 		self.IsUnderWeight = true
-		if(ISBNK) then
+		if ISBNK then
 			self.IsUnderWeight = self:CheckWeight()
 		end
 	end
-	if ( (self.CurrentShot > 0) and self.IsUnderWeight and self.Ready and self:GetPhysicsObject():GetMass() >= self.Mass and not (self:GetParent():IsValid() and not self.Parentable) ) then
-		if ( ACF.RoundTypes[self.BulletData.Type] ) then		--Check if the roundtype loaded actually exists
+	
+	if self.CurrentShot > 0 and self.IsUnderWeight and self.Ready and self:GetPhysicsObject():GetMass() >= self.Mass then
+		if ACF.RoundTypes[self.BulletData.Type] then		--Check if the roundtype loaded actually exists
 			self:LoadAmmo(self.MagReload, false)	
 			self:EmitSound("weapons/357/357_reload4.wav",500,100)
 			self.CurrentShot = 0
@@ -540,7 +544,7 @@ function ENT:GetInaccuracy()
 	local SpreadScale = ACF.SpreadScale
 	local IaccMult = 1
 	
-	if (self.ACF.Health and self.ACF.MaxHealth) then
+	if self.ACF.Health and self.ACF.MaxHealth then
 		IaccMult = math.Clamp(((1 - SpreadScale) / (0.5)) * ((self.ACF.Health/self.ACF.MaxHealth) - 1) + 1, 1, SpreadScale)
 	end
 	
@@ -550,35 +554,34 @@ function ENT:GetInaccuracy()
 end
 
 
-
 function ENT:FireShell()
 	
-	local CanDo = hook.Run("ACF_FireShell", self, self.BulletData )
-	if CanDo == false then return end
-	if(self.IsUnderWeight == nil) then
+	if hook.Run("ACF_FireShell", self, self.BulletData ) == false then return end
+	
+	if self.IsUnderWeight == nil then
 		self.IsUnderWeight = true
-		if(ISBNK) then
+		if ISBNK then
 			self.IsUnderWeight = self:CheckWeight()
 		end
 	end
 	
 	local bool = true
-	if(ISSITP) then
-		if(self.sitp_spacetype != "space" and self.sitp_spacetype != "planet") then
+	if ISSITP then
+		if self.sitp_spacetype != "space" and self.sitp_spacetype != "planet" then
 			bool = false
 		end
-		if(self.sitp_core == false) then
+		if self.sitp_core == false then
 			bool = false
 		end
 	end
-	if ( bool and self.IsUnderWeight and self.Ready and self:GetPhysicsObject():GetMass() >= self.Mass and not (self:GetParent():IsValid() and not self.Parentable) ) then
+	if bool and self.IsUnderWeight and self.Ready and self:GetPhysicsObject():GetMass() >= self.Mass then
 		Blacklist = {}
 		if not ACF.AmmoBlacklist[self.BulletData.Type] then
 			Blacklist = {}
 		else
 			Blacklist = ACF.AmmoBlacklist[self.BulletData.Type]	
 		end
-		if ( ACF.RoundTypes[self.BulletData.Type] and !table.HasValue( Blacklist, self.Class ) ) then		--Check if the roundtype loaded actually exists
+		if ACF.RoundTypes[self.BulletData.Type] and !table.HasValue( Blacklist, self.Class ) then		--Check if the roundtype loaded actually exists
 		
 			local MuzzlePos = self:LocalToWorld(self.Muzzle)
 			local MuzzleVec = self:GetForward()
@@ -601,7 +604,7 @@ function ENT:FireShell()
 			
 			self.Ready = false
 			self.CurrentShot = math.min(self.CurrentShot + 1, self.MagSize)
-			if((self.CurrentShot >= self.MagSize) and (self.MagSize > 1)) then
+			if self.CurrentShot >= self.MagSize and self.MagSize > 1 then
 				self:LoadAmmo(self.MagReload, false)	
 				self:EmitSound("weapons/357/357_reload4.wav",500,100)
 				self.CurrentShot = 0
@@ -629,13 +632,13 @@ function ENT:FindNextCrate()
 	local AmmoEnt = nil
 	local i = 0
 	
-	while i <= MaxAmmo and not (AmmoEnt and AmmoEnt:IsValid() and AmmoEnt.Ammo > 0) do
+	while i <= MaxAmmo and not (AmmoEnt and IsValid(AmmoEnt) and AmmoEnt.Ammo > 0) do
 		
 		self.CurAmmo = self.CurAmmo + 1
 		if self.CurAmmo > MaxAmmo then self.CurAmmo = 1 end
 		
 		AmmoEnt = self.AmmoLink[self.CurAmmo]
-		if AmmoEnt and AmmoEnt:IsValid() and AmmoEnt.Ammo > 0 and AmmoEnt.Load then
+		if AmmoEnt and IsValid(AmmoEnt) and AmmoEnt.Ammo > 0 and AmmoEnt.Load then
 			return AmmoEnt
 		end
 		AmmoEnt = nil
@@ -655,11 +658,10 @@ function ENT:LoadAmmo( AddTime, Reload )
 		AmmoEnt.Ammo = AmmoEnt.Ammo - 1
 		self.BulletData = AmmoEnt.BulletData
 		self.BulletData.Crate = AmmoEnt:EntIndex()
-		
-		local cb = 1
-		if(self.CrateBonus and (self.MagReload == 0)) then
+				local cb = 1
+		if self.CrateBonus and self.MagReload == 0 then
 			cb = self.CrateBonus
-			if (cb == 0) then cb = 1 end
+			if cb == 0 then cb = 1 end
 		end
 		
 		self.ReloadTime = ((self.BulletData.RoundVolume/500)^0.60)*self.RoFmod*self.PGRoFmod * cb
