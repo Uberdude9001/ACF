@@ -11,6 +11,7 @@ if CLIENT then
 	/*-------------------------------------
 	Shamefully stolen from lua rollercoaster. I'M SO SORRY. I HAD TO.
 	-------------------------------------*/
+
 	local function Bezier( a, b, c, d, t )
 		local ab,bc,cd,abbc,bccd 
 		
@@ -23,6 +24,8 @@ if CLIENT then
 		
 		return dest
 	end
+
+
 	local function BezPoint(perc, Table)
 		perc = perc or self.Perc
 		
@@ -43,7 +46,7 @@ if CLIENT then
 			local vectab = { St, St2, En2, En}
 			local center = (St+En)/2
 			for I = 1, Amount do
-				local point = BezPoint(((I+Time)%Amount)/Amount, vectab)
+				local point = BezPoint(((((I+Time)%Amount))/Amount), vectab)
 				local ang = (point - center):Angle()
 				local MdlTbl = {
 					model = v.Model,
@@ -54,6 +57,7 @@ if CLIENT then
 			end
 		end
 	end
+
 	function ENT:Draw()
 		
 		self.BaseClass.Draw( self )
@@ -91,6 +95,7 @@ if CLIENT then
 	return
 	
 end
+
 function ENT:Initialize()
 	
 	self.SpecialHealth = true	--If true needs a special ACF_Activate function
@@ -114,9 +119,11 @@ function ENT:Initialize()
 	ACF.AmmoCrates = ACF.AmmoCrates or {}
 	
 end
+
 function ENT:ACF_Activate( Recalc )
 	
 	local EmptyMass = math.max(self.EmptyMass, self:GetPhysicsObject():GetMass() - self:AmmoMass())
+
 	self.ACF = self.ACF or {} 
 	
 	local PhysObj = self:GetPhysicsObject()
@@ -150,12 +157,13 @@ function ENT:ACF_OnDamage( Entity, Energy, FrAera, Angle, Inflictor, Bone, Type 
 
 	local HitRes = ACF_PropDamage( Entity, Energy, FrAera, Angle, Inflictor )	--Calling the standard damage prop function
 	
-	if self.Exploding or not self.IsExplosive then return HitRes end
+	if self.Exploding or not self.IsExplosive or self.Damaged or ( self.Caliber < 1.3 and Type ~= "HEAT" and self:GetPhysicsObject():GetMass() < 40 ) then return HitRes end
 	
 	if HitRes.Kill then
 		if hook.Run("ACF_AmmoExplode", self, self.BulletData ) == false then return HitRes end
+		
 		self.Exploding = true
-		if( Inflictor and Inflictor:IsValid() and Inflictor:IsPlayer() ) then
+		if Inflictor and IsValid(Inflictor) and Inflictor:IsPlayer() then
 			self.Inflictor = Inflictor
 		end
 		if self.Ammo > 1 then
@@ -165,9 +173,7 @@ function ENT:ACF_OnDamage( Entity, Energy, FrAera, Angle, Inflictor, Bone, Type 
 		end
 	end
 	
-	if self.Damaged then return HitRes end
 	local Ratio = (HitRes.Damage/self.BulletData.RoundVolume)^0.2
-	--print(Ratio)
 	if Ratio * self.Capacity/self.Ammo > math.Rand(0,1) or Type == "HEAT" then  
 		self.Inflictor = Inflictor
 		self.Damaged = CurTime() + (5 - Ratio*3)
@@ -182,7 +188,7 @@ function MakeACF_Ammo(Owner, Pos, Angle, Id, Data1, Data2, Data3, Data4, Data5, 
 	if not Owner:CheckLimit("_acf_ammo") then return false end
 	
 	local Ammo = ents.Create("acf_ammo")
-	if not Ammo:IsValid() then return false end
+	if not IsValid(Ammo) then return false end
 	Ammo:SetAngles(Angle)
 	Ammo:SetPos(Pos)
 	Ammo:Spawn()
@@ -204,7 +210,7 @@ function MakeACF_Ammo(Owner, Pos, Angle, Id, Data1, Data2, Data3, Data4, Data5, 
 	Ammo.Mass = Ammo.EmptyMass + Ammo:AmmoMass()
 	
 	local phys = Ammo:GetPhysicsObject()  	
-	if (phys:IsValid()) then 
+	if IsValid(phys) then 
 		phys:SetMass( Ammo.Mass ) 
 	end
 	
@@ -358,14 +364,14 @@ end
 
 function ENT:TriggerInput( iname, value )
 
-	if (iname == "Active") then
+	if iname == "Active" then
 		if value > 0 then
 			self.Load = true
 			self:FirstLoad()
 		else
 			self.Load = false
 		end
-	elseif (iname == "Fuse Length" and value > 0 and (self.BulletData.RoundType == "HE" or self.BulletData.RoundType == "APHE")) then
+	elseif iname == "Fuse Length" and value > 0 and (self.BulletData.RoundType == "HE" or self.BulletData.RoundType == "APHE") then
 	end
 
 end
@@ -394,10 +400,10 @@ function ENT:Think()
 	local color = self:GetColor()
 	self:SetNetworkedVector("TracerColour", Vector( color.r, color.g, color.b ) )
 	
-	local cvarGrav = GetConVar("sv_gravity")
-	local vec = Vector(0,0,cvarGrav:GetInt()*-1)
-	if( self.sitp_inspace ) then
-		vec = Vector(0, 0, 0)
+	if self.sitp_inspace then
+		local vec = Vector(0, 0, 0)
+	else
+		local vec = Vector(0,0,GetConVar("sv_gravity"):GetInt()*-1)
 	end
 		
 	self:SetNetworkedVector("Accel", vec)
