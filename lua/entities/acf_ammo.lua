@@ -11,7 +11,7 @@ if CLIENT then
 	/*-------------------------------------
 	Shamefully stolen from lua rollercoaster. I'M SO SORRY. I HAD TO.
 	-------------------------------------*/
-
+	
 	local function Bezier( a, b, c, d, t )
 		local ab,bc,cd,abbc,bccd 
 		
@@ -24,8 +24,7 @@ if CLIENT then
 		
 		return dest
 	end
-
-
+	
 	local function BezPoint(perc, Table)
 		perc = perc or self.Perc
 		
@@ -46,7 +45,7 @@ if CLIENT then
 			local vectab = { St, St2, En2, En}
 			local center = (St+En)/2
 			for I = 1, Amount do
-				local point = BezPoint(((((I+Time)%Amount))/Amount), vectab)
+				local point = BezPoint(((I+Time)%Amount)/Amount, vectab)
 				local ang = (point - center):Angle()
 				local MdlTbl = {
 					model = v.Model,
@@ -57,7 +56,7 @@ if CLIENT then
 			end
 		end
 	end
-
+	
 	function ENT:Draw()
 		
 		self.BaseClass.Draw( self )
@@ -95,7 +94,6 @@ if CLIENT then
 	return
 	
 end
-
 function ENT:Initialize()
 	
 	self.SpecialHealth = true	--If true needs a special ACF_Activate function
@@ -119,17 +117,17 @@ function ENT:Initialize()
 	ACF.AmmoCrates = ACF.AmmoCrates or {}
 	
 end
-
 function ENT:ACF_Activate( Recalc )
 	
 	local EmptyMass = math.max(self.EmptyMass, self:GetPhysicsObject():GetMass() - self:AmmoMass())
-
 	self.ACF = self.ACF or {} 
 	
 	local PhysObj = self:GetPhysicsObject()
+	
 	if not self.ACF.Aera then
 		self.ACF.Aera = PhysObj:GetSurfaceArea() * 6.45
 	end
+	
 	if not self.ACF.Volume then
 		self.ACF.Volume = PhysObj:GetVolume() * 16.38
 	end
@@ -157,15 +155,18 @@ function ENT:ACF_OnDamage( Entity, Energy, FrAera, Angle, Inflictor, Bone, Type 
 
 	local HitRes = ACF_PropDamage( Entity, Energy, FrAera, Angle, Inflictor )	--Calling the standard damage prop function
 	
-	if self.Exploding or not self.IsExplosive or self.Damaged or ( self.Caliber < 1.3 and Type ~= "HEAT" and self:GetPhysicsObject():GetMass() < 40 ) then return HitRes end
+	if self.Exploding or not self.IsExplosive then return HitRes end
 	
 	if HitRes.Kill then
+		
 		if hook.Run("ACF_AmmoExplode", self, self.BulletData ) == false then return HitRes end
 		
 		self.Exploding = true
+		
 		if Inflictor and IsValid(Inflictor) and Inflictor:IsPlayer() then
 			self.Inflictor = Inflictor
 		end
+		
 		if self.Ammo > 1 then
 			ACF_ScaledExplosion( self )
 		else
@@ -173,7 +174,9 @@ function ENT:ACF_OnDamage( Entity, Energy, FrAera, Angle, Inflictor, Bone, Type 
 		end
 	end
 	
+	if self.Damaged then return HitRes end
 	local Ratio = (HitRes.Damage/self.BulletData.RoundVolume)^0.2
+	--print(Ratio)
 	if Ratio * self.Capacity/self.Ammo > math.Rand(0,1) or Type == "HEAT" then  
 		self.Inflictor = Inflictor
 		self.Damaged = CurTime() + (5 - Ratio*3)
@@ -188,7 +191,9 @@ function MakeACF_Ammo(Owner, Pos, Angle, Id, Data1, Data2, Data3, Data4, Data5, 
 	if not Owner:CheckLimit("_acf_ammo") then return false end
 	
 	local Ammo = ents.Create("acf_ammo")
-	if not IsValid(Ammo) then return false end
+	
+	if not Ammo:IsValid() then return false end
+	
 	Ammo:SetAngles(Angle)
 	Ammo:SetPos(Pos)
 	Ammo:Spawn()
@@ -371,9 +376,12 @@ function ENT:TriggerInput( iname, value )
 		else
 			self.Load = false
 		end
-	elseif iname == "Fuse Length" and value > 0 and (self.BulletData.RoundType == "HE" or self.BulletData.RoundType == "APHE") then
 	end
-
+	--[[
+	elseif iname == "Fuse Length" and value > 0 and (self.BulletData.RoundType == "HE" or self.BulletData.RoundType == "APHE") then
+		
+	end
+	]]--
 end
 
 function ENT:FirstLoad()
@@ -400,6 +408,7 @@ function ENT:Think()
 	local color = self:GetColor()
 	self:SetNetworkedVector("TracerColour", Vector( color.r, color.g, color.b ) )
 	
+	
 	if self.sitp_inspace then
 		local vec = Vector(0, 0, 0)
 	else
@@ -414,7 +423,7 @@ function ENT:Think()
 		if self.Damaged < CurTime() then
 			ACF_ScaledExplosion( self )
 		else
-			if not (self.BulletData.Type == "Refill") then
+			if self.BulletData.Type ~= "Refill" then
 				if math.Rand(0,150) > self.BulletData.RoundVolume^0.5 and math.Rand(0,1) < self.Ammo/math.max(self.Capacity,1) and ACF.RoundTypes[self.BulletData.Type] then
 					self:EmitSound( "ambient/explosions/explode_4.wav", 350, math.max(255 - self.BulletData.PropMass*100,60)  )	
 					local MuzzlePos = self:GetPos()
