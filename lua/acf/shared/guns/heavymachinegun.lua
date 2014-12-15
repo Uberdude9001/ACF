@@ -1,6 +1,6 @@
 --define the class
 ACF_defineGunClass("HMG", {
-	spread = 0.32,
+	spread = 0.16,
 	name = "Heavy Machinegun",
 	desc = "Heavy machineguns are lightweight and compact, but suffer from poor accuracy.",
 	muzzleflash = "50cal_muzzleflash_noscale",
