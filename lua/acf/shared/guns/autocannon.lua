@@ -1,6 +1,6 @@
 --define the class
 ACF_defineGunClass("AC", {
-	spread = 0.8,
+	spread = 0.08,
 	name = "Autocannon",
 	desc = "Autocannons have a rather high weight and bulk for the ammo they fire, but they can fire it extremely fast.",
 	muzzleflash = "30mm_muzzleflash_noscale",
